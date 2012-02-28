@@ -57,7 +57,7 @@ ind <- which(v.lc05.mod == 5 | v.lc05.mod == 6); values(lc05.mod)[ind] <- 4 # rc
 ind <- which(v.lc05.mod == 8); values(lc05.mod)[ind] <- 5 # rcl 8 as 5
 ind <- which(v.lc05.mod == 10 | v.lc05.mod == 11 | v.lc05.mod == 12 | v.lc05.mod == 13); values(lc05.mod)[ind] <- 1 # rcl 10 thru 13 as 1
 ind <- which(v.lc05.mod == 14); values(lc05.mod)[ind] <- 6 # rcl 14 as 6
-ind <- which(v.lc05.mod == 15 | v.lc05.mod == 16 | v.lc05.mod == 17 | v.lc05.mod == 18 | v.lc05.mod == 19); values(lc05.mod)[ind] <- 0 # rcl 15 thru 19 as 0
+ind <- which(v.lc05.mod == 15 | v.lc05.mod == 16 | v.lc05.mod == 17 | v.lc05.mod == 18 | v.lc05.mod == 19 | v.lc05.mod == 128); values(lc05.mod)[ind] <- 0 # rcl 15 thru 19 as 0
 
 writeRaster(lc05.mod, filename=paste(output.dir,"NA_LandCover_2005_PRISM_extent_AKAlbers_1km_modal_simplifyClasses_step1.tif", sep=""), overwrite=TRUE)
 
