@@ -110,8 +110,8 @@ v.lc05.mod <- getValues(lc05.mod)
 v.north_south <- getValues(north_south)
 
 # now I get the values that correspond to some conditions and change their values to the proper ALFRESCO class
-ind <- which(v.lc05.mod == 3 & (v.gs_temp <= 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 3
 ind <- which(v.lc05.mod == 3 & (v.gs_temp > 6.5 | v.north_south == 2)); values(lc05.mod)[ind] <- 5
+ind <- which(v.lc05.mod == 3 & (v.gs_temp <= 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 3
 
 writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step4.tif", sep=""), overwrite=TRUE)
 
