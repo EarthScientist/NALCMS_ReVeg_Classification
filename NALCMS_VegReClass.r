@@ -68,8 +68,9 @@ v.lc05.mod <- getValues(lc05.mod)
 v.CoastSpruceBog <- getValues(coast_spruce_bog)
 
 # now we index the values we want to use for this step of the reclass
-ind <- which(v.lc05.mod == 6 & v.CoastSpruceBog == 2); values(lc05.mod)[ind] <- 3
 ind <- which(v.lc05.mod == 6 & v.CoastSpruceBog != 2); values(lc05.mod)[ind] <- 0
+ind <- which(v.lc05.mod == 6 & v.CoastSpruceBog == 2); values(lc05.mod)[ind] <- 3
+
 
 rm(v.CoastSpruceBog)
 rm(coast_spruce_bog)
@@ -109,8 +110,8 @@ v.lc05.mod <- getValues(lc05.mod)
 
 # Here we will reclass the spruce class to black or white spruce
 
-ind <- which(v.lc05.mod == 2 & (v.gs_temp < 6.5 | v.north_south == 2)); values(lc05.mod)[ind] <- 3
-ind <- which(v.lc05.mod == 2 & (v.gs_temp >= 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 2
+ind <- which(v.lc05.mod == 2 & (v.gs_temp <= 6.5 | v.north_south == 2)); values(lc05.mod)[ind] <- 3
+ind <- which(v.lc05.mod == 2 & (v.gs_temp > 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 2
 
 writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step5.tif", sep=""), overwrite=TRUE)
 
