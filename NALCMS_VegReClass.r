@@ -123,8 +123,8 @@ v.lc05.mod <- getValues(lc05.mod)
 
 # Here we will reclass the spruce class to black or white spruce
 
-ind <- which(v.lc05.mod == 2 & (v.gs_temp <= 6.5 | v.north_south == 2)); values(lc05.mod)[ind] <- 3
-ind <- which(v.lc05.mod == 2 & (v.gs_temp > 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 2
+ind <- which(v.lc05.mod == 2 & (v.gs_temp <= 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 3
+ind <- which(v.lc05.mod == 2 & (v.gs_temp > 6.5 | v.north_south == 2)); values(lc05.mod)[ind] <- 2
 
 writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step5.tif", sep=""), overwrite=TRUE)
 
