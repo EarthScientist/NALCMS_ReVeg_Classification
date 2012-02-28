@@ -49,6 +49,8 @@ v.lc05.mod <- getValues(lc05.mod)
 # 14 14 : 6 
 # 15 19 : 0
 
+# STEP 1
+
 #reclassify the original NALCMS 2005 Landcover Map
 # we do this via indexing the data we want using the builtin R {base} function which() and replace the values using the R {Raster}
 # package function values() and assigning those values in the [index] the new value desired.
@@ -62,6 +64,9 @@ ind <- which(v.lc05.mod == 15 | v.lc05.mod == 16 | v.lc05.mod == 17 | v.lc05.mod
 writeRaster(lc05.mod, filename=paste(output.dir,"NA_LandCover_2005_PRISM_extent_AKAlbers_1km_modal_simplifyClasses_step1.tif", sep=""), overwrite=TRUE)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+# STEP 2
+
 v.lc05.mod <- getValues(lc05.mod)
 
 # lets get the values of the Coastal_vs_Spruce_bog layer that differentiates the different wetland classes
@@ -78,6 +83,9 @@ rm(coast_spruce_bog)
 writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step2.tif", sep=""), overwrite=TRUE)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+# STEP 3
+
 v.lc05.mod <- getValues(lc05.mod)
 
 # Now we need to get the values of the MJJA gs_temp layer that differentiates the temperate shrublands between 
@@ -93,6 +101,9 @@ rm(gs_temp)
 writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step3.tif", sep=""), overwrite=TRUE)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+# STEP 4
+
 v.lc05.mod <- getValues(lc05.mod)
 
 #Now we bring the north_south map into the mix to differentiate between the white and black spruce from the spruce bog
@@ -106,6 +117,8 @@ writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
+# STEP 5
+
 v.lc05.mod <- getValues(lc05.mod)
 
 # Here we will reclass the spruce class to black or white spruce
@@ -116,6 +129,8 @@ ind <- which(v.lc05.mod == 2 & (v.gs_temp > 6.5 | v.north_south == 1)); values(l
 writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step5.tif", sep=""), overwrite=TRUE)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+# STEP 6 -- FINAL
 
 v.lc05.mod <- getValues(lc05.mod)
 
