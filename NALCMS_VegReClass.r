@@ -5,11 +5,11 @@ require(raster)
 setwd("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/working_folder/")
 
 # set an output directory
-output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/outputs/run_3/"
+output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/outputs/run_5/"
 
 
 # the input NALCMS 2005 Land cover raster
-lc05 <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/na_landcover_20051km_MASTER.tif")
+lc05 <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/na_landcover_2005_1km_MASTER.tif")
 north_south <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/AKCanada_1km_NorthSouth_FlatWater_999_MASTER.tif")
 mask <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/AKCanada_PRISM_Mask_1km.tif")
 gs_temp <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/AKCanada_gs_temp_mean_MJJA_1961_1990_climatology_1km_bilinearMASTER.tif")
