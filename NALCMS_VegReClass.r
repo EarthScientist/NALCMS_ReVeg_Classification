@@ -11,8 +11,8 @@ output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/outputs/run_
 # the input NALCMS 2005 Land cover raster
 lc05 <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/na_landcover_2005_1km_MASTER.tif")
 north_south <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/AKCanada_1km_NorthSouth_FlatWater_999_MASTER.tif")
-mask <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/AKCanada_PRISM_Mask_1km.tif")
-gs_temp <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/AKCanada_gs_temp_mean_MJJA_1961_1990_climatology_1km_bilinearMASTER.tif")
+mask <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/AKCanada_PRISM_Mask_1km_gs_temp_version.tif")
+gs_temp <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/AKCanada_gs_temp_mean_MJJAS_1961_1990_climatology_1km_bilinear_MASTER.tif")
 coast_spruce_bog <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/Coastal_vs_Woody_wetlands_MASTER.tif")
 
 #this next line just duplicates the input lc map and we will change the values in this map and write it to a TIFF
@@ -73,8 +73,8 @@ v.lc05.mod <- getValues(lc05.mod)
 v.CoastSpruceBog <- getValues(coast_spruce_bog)
 
 # now we index the values we want to use for this step of the reclass
-ind <- which(v.lc05.mod == 6 & v.CoastSpruceBog != 2); values(lc05.mod)[ind] <- 0
 ind <- which(v.lc05.mod == 6 & v.CoastSpruceBog == 2); values(lc05.mod)[ind] <- 3
+ind <- which(v.lc05.mod == 6 & v.CoastSpruceBog != 2); values(lc05.mod)[ind] <- 0
 
 
 rm(v.CoastSpruceBog)
@@ -110,8 +110,9 @@ v.lc05.mod <- getValues(lc05.mod)
 v.north_south <- getValues(north_south)
 
 # now I get the values that correspond to some conditions and change their values to the proper ALFRESCO class
-ind <- which(v.lc05.mod == 3 & (v.gs_temp < 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 3
 ind <- which(v.lc05.mod == 3 & (v.gs_temp > 6.5 | v.north_south == 2)); values(lc05.mod)[ind] <- 5
+
+#ind <- which(v.lc05.mod == 3 & (v.gs_temp < 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 3
 
 writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step4.tif", sep=""), overwrite=TRUE)
 
@@ -124,7 +125,8 @@ v.lc05.mod <- getValues(lc05.mod)
 # Here we will reclass the spruce class to black or white spruce
 
 ind <- which(v.lc05.mod == 2 & (v.gs_temp < 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 3
-ind <- which(v.lc05.mod == 2 & (v.gs_temp > 6.5 | v.north_south == 2)); values(lc05.mod)[ind] <- 2
+
+#ind <- which(v.lc05.mod == 2 & (v.gs_temp > 6.5 | v.north_south == 2)); values(lc05.mod)[ind] <- 2
 
 writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step5.tif", sep=""), overwrite=TRUE)
 
