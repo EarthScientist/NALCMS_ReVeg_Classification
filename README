@@ -1,0 +1,21 @@
+This readme file is to describe the creation of the input maps used in the reclassification of the NALCMS 2005 Land Cover data set into classes suitable for use in the ALFRESCO fire model.
+The original code and logic was written by Anna Springsteen using the Python language and the ArcGIS 10 commercial GIS software.  The rewrite has been done in the R statistical language using the package::raster from CRAN using the same reclassification logic developed by Anna Springsteen.
+
+The major difference between the old reclassification and the new one is that the Area of Interest (AOI) has been expanded to include the SNAP downscaled data extent.  This includes Alaska, Yukon, British Columbia, Alberta, Saskatchewan, and Manitoba.  This will allow for fire modeling using the ALFRESCO model into the regions of the Boreal Forest East of Alaska.  
+
+Input Maps:
+
+1. North American Land Cover 2005 - Center for Environmental Cooperation (CEC.org) * covers all of North American Continent with a seamless land cover classification scheme
+
+2. North South Map - Derived from Aspect calculation (in degrees) of the PRISM 2km Digital Elevation Model (DEM), reclassed to 3 classes: North, South, Water 
+		The classification scheme used to reclassify the aspect map is as follows: south = greater than 90 degrees and less than 301 degrees (value=1). north is all else (value=2), water (value=999)
+		-> important to note here that when calculating aspect there are situations that arise where there is no slope and therefore no aspect.  In these situations the flat areas were reclassified as NORTH (2) unless they are a body of water.  Water bodies were extracted from the NALCMS Landcover Data and those areas that were both flat and waterbodies were reclassed as water (999).  Therefore we are able to reclassify the large water bodies and give a class to the flat areas that are not waterbodies...
+
+3. Coastal Wetland vs Srpuce Bog Map - this layer was derived through combining features of the Nowacki (Nowacki, Gregory; Spencer, Page; Fleming, Michael; Brock, Terry; and Jorgenson, Torre. Ecoregions of 	
+		Alaska: 2001.), and the Ecozones and Ecoregions of Canada (A National Ecological Framework for Canada: Attribute Data. Marshall, I.B., Schut, P.H., and Ballard, M. 1999. Agriculture and Agri-Food Canada, Research Branch, Centre for Land and Biological Resources Research, and Environment Canada, State of the Environment Directorate, Ecozone Analysis Branch, Ottawa/Hull.).
+			-> Nowacki (2001) chosen features include 2 classes of the "LEVEL_2" ecoregions in that dataset where Intermontane Boreal (a.k.a. Alaska's Interior) was classed as 2 and all other ecoregions (Basically all coastal) was classed as 1.  This gives a differentiation between the wetlands classes that fall into each of these two reclassified regions, allowing for the creation of an Spruce Bog class from the "wetland" class in the NALCMS 2005 Land Cover Classification.  With the expansion in the AOI in this version of the reclassification to cover portions of West Canada 
+
+4. gs_temp - 
+
+5.
+
