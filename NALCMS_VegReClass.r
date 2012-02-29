@@ -1,5 +1,3 @@
-
-# here is a change
 # lets bring in the library used to perform this task
 require(raster)
 
