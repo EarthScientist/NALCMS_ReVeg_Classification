@@ -1,3 +1,4 @@
+# this is a testing branch to come up with some new ways of classifying the NALCMS data
 # lets bring in the library used to perform this task
 require(raster)
 
