@@ -6,7 +6,7 @@ require(raster)
 setwd("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/working_folder/")
 
 # set an output directory
-output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/outputs/run_5/"
+output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/outputs/run_6/"
 
 
 # the input NALCMS 2005 Land cover raster
@@ -48,19 +48,23 @@ v.lc05.mod <- getValues(lc05.mod)
 # 8 8 : 5
 # 10 13 : 1
 # 14 14 : 6 
-# 15 19 : 0
+# 15 19 : 0g
 
 # STEP 1
+
+
 
 #reclassify the original NALCMS 2005 Landcover Map
 # we do this via indexing the data we want using the builtin R {base} function which() and replace the values using the R {Raster}
 # package function values() and assigning those values in the [index] the new value desired.
 ind <- which(v.lc05.mod == 1 | v.lc05.mod == 2); values(lc05.mod)[ind] <- 2 # rcl 1 and 2 as 2
 ind <- which(v.lc05.mod == 5 | v.lc05.mod == 6); values(lc05.mod)[ind] <- 4 # rcl 5 and 6 as 4
-ind <- which(v.lc05.mod == 8); values(lc05.mod)[ind] <- 5 # rcl 8 as 5
-ind <- which(v.lc05.mod == 10 | v.lc05.mod == 11 | v.lc05.mod == 12 | v.lc05.mod == 13); values(lc05.mod)[ind] <- 1 # rcl 10 thru 13 as 1
-ind <- which(v.lc05.mod == 14); values(lc05.mod)[ind] <- 6 # rcl 14 as 6
-ind <- which(v.lc05.mod == 15 | v.lc05.mod == 16 | v.lc05.mod == 17 | v.lc05.mod == 18 | v.lc05.mod == 19 | v.lc05.mod == 128); values(lc05.mod)[ind] <- 0 # rcl 15 thru 19 as 0
+ind <- which(v.lc05.mod == 8); values(lc05.mod)[ind] <- 8 # rcl 8 as 5
+ind <- which(v.lc05.mod == 10); values(lc05.mod)[ind] <- 10
+ind <- which(v.lc05.mod == 11); values(lc05.mod)[ind] <- 11
+ind <- which(v.lc05.mod == 12); values(lc05.mod)[ind] <- 12 # rcl 10 thru 13 as 1
+ind <- which(v.lc05.mod == 14); values(lc05.mod)[ind] <- 14 # rcl 14 as 6
+ind <- which(v.lc05.mod == 13 | v.lc05.mod == 15 | v.lc05.mod == 16 | v.lc05.mod == 17 | v.lc05.mod == 18 | v.lc05.mod == 19 | v.lc05.mod == 128); values(lc05.mod)[ind] <- 0 # rcl 15 thru 19 as 0
 
 writeRaster(lc05.mod, filename=paste(output.dir,"NA_LandCover_2005_PRISM_extent_AKAlbers_1km_modal_simplifyClasses_step1.tif", sep=""), overwrite=TRUE)
 
@@ -74,8 +78,9 @@ v.lc05.mod <- getValues(lc05.mod)
 v.CoastSpruceBog <- getValues(coast_spruce_bog)
 
 # now we index the values we want to use for this step of the reclass
-ind <- which(v.lc05.mod == 6 & v.CoastSpruceBog == 2); values(lc05.mod)[ind] <- 3
-ind <- which(v.lc05.mod == 6 & v.CoastSpruceBog != 2); values(lc05.mod)[ind] <- 0
+# [version2] these values have been altered from the original version and will be reclassed now into wetland tundra and coastal spruce bog
+ind <- which(v.lc05.mod == 14 & v.CoastSpruceBog == 2); values(lc05.mod)[ind] <- 3
+ind <- which(v.lc05.mod == 14 & v.CoastSpruceBog != 2); values(lc05.mod)[ind] <- 0
 
 
 rm(v.CoastSpruceBog)
