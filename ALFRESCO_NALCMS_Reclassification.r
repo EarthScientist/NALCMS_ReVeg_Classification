@@ -48,7 +48,7 @@ v.lc05.mod <- getValues(lc05.mod)
 # 8 8 : 5
 # 10 13 : 1
 # 14 14 : 6 
-# 15 19 : 0g
+# 15 19 : 0
 
 # STEP 1
 
@@ -57,14 +57,14 @@ v.lc05.mod <- getValues(lc05.mod)
 #reclassify the original NALCMS 2005 Landcover Map
 # we do this via indexing the data we want using the builtin R {base} function which() and replace the values using the R {Raster}
 # package function values() and assigning those values in the [index] the new value desired.
-ind <- which(v.lc05.mod == 1 | v.lc05.mod == 2); values(lc05.mod)[ind] <- 2 # rcl 1 and 2 as 2
-ind <- which(v.lc05.mod == 5 | v.lc05.mod == 6); values(lc05.mod)[ind] <- 4 # rcl 5 and 6 as 4
-ind <- which(v.lc05.mod == 8); values(lc05.mod)[ind] <- 8 # rcl 8 as 5
-ind <- which(v.lc05.mod == 10); values(lc05.mod)[ind] <- 10
-ind <- which(v.lc05.mod == 11); values(lc05.mod)[ind] <- 11
-ind <- which(v.lc05.mod == 12); values(lc05.mod)[ind] <- 12 # rcl 10 thru 13 as 1
-ind <- which(v.lc05.mod == 14); values(lc05.mod)[ind] <- 14 # rcl 14 as 6
-ind <- which(v.lc05.mod == 13 | v.lc05.mod == 15 | v.lc05.mod == 16 | v.lc05.mod == 17 | v.lc05.mod == 18 | v.lc05.mod == 19 | v.lc05.mod == 128); values(lc05.mod)[ind] <- 0 # rcl 15 thru 19 as 0
+ind <- which(v.lc05.mod == 1 | v.lc05.mod == 2); values(lc05.mod)[ind] <- 10 # Reclass the needleleaf classes to SPRUCE
+ind <- which(v.lc05.mod == 5 | v.lc05.mod == 6); values(lc05.mod)[ind] <- 12 # Reclass the deciduous and mixed as DECIDUOUS
+ind <- which(v.lc05.mod == 8); values(lc05.mod)[ind] <- 13 # Reclass the Temperate or sub-polar shrubland as SHRUB TUNDRA OR DECIDUOUS
+ind <- which(v.lc05.mod == 10); values(lc05.mod)[ind] <- 14 # Reclass Temperate or sub-polar grassland as GRAMMINOID TUNDRA and GRASSSLAND
+ind <- which(v.lc05.mod == 11); values(lc05.mod)[ind] <- 16 # Reclass Sub-polar or polar shrubland-lichen-moss as SHRUB TUNDRA
+ind <- which(v.lc05.mod == 12); values(lc05.mod)[ind] <- 17 # Reclass Sub-polar or polar grassland-lichen-moss as GRAMMINOID TUNDRA
+ind <- which(v.lc05.mod == 14); values(lc05.mod)[ind] <- 14 # Reclass Wetland to SPRUCE or WET TUNDRA
+ind <- which(v.lc05.mod == 13 | v.lc05.mod == 15 | v.lc05.mod == 16 | v.lc05.mod == 17 | v.lc05.mod == 18 | v.lc05.mod == 19 | v.lc05.mod == 128); values(lc05.mod)[ind] <- 0 # rcl 13 & 15 thru 19 as 0
 
 writeRaster(lc05.mod, filename=paste(output.dir,"NA_LandCover_2005_PRISM_extent_AKAlbers_1km_modal_simplifyClasses_step1.tif", sep=""), overwrite=TRUE)
 
