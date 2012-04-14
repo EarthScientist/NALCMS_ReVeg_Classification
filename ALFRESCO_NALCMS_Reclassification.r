@@ -63,7 +63,7 @@ ind <- which(v.lc05.mod == 8); values(lc05.mod)[ind] <- 13 # Reclass the Tempera
 ind <- which(v.lc05.mod == 10); values(lc05.mod)[ind] <- 14 # Reclass Temperate or sub-polar grassland as GRAMMINOID TUNDRA and GRASSSLAND
 ind <- which(v.lc05.mod == 11); values(lc05.mod)[ind] <- 16 # Reclass Sub-polar or polar shrubland-lichen-moss as SHRUB TUNDRA
 ind <- which(v.lc05.mod == 12); values(lc05.mod)[ind] <- 17 # Reclass Sub-polar or polar grassland-lichen-moss as GRAMMINOID TUNDRA
-ind <- which(v.lc05.mod == 14); values(lc05.mod)[ind] <- 14 # Reclass Wetland to SPRUCE or WET TUNDRA
+ind <- which(v.lc05.mod == 14); values(lc05.mod)[ind] <- 15 # Reclass Wetland to SPRUCE or WET TUNDRA
 ind <- which(v.lc05.mod == 13 | v.lc05.mod == 15 | v.lc05.mod == 16 | v.lc05.mod == 17 | v.lc05.mod == 18 | v.lc05.mod == 19 | v.lc05.mod == 128); values(lc05.mod)[ind] <- 0 # rcl 13 & 15 thru 19 as 0
 
 writeRaster(lc05.mod, filename=paste(output.dir,"NA_LandCover_2005_PRISM_extent_AKAlbers_1km_modal_simplifyClasses_step1.tif", sep=""), overwrite=TRUE)
@@ -72,15 +72,21 @@ writeRaster(lc05.mod, filename=paste(output.dir,"NA_LandCover_2005_PRISM_extent_
 
 # STEP 2
 
+# here we are going to take the class SPRUCE or WET TUNDRA and break it down into classes of SPRUCE BOG or WETLAND TUNDRA or WETLAND
+
 v.lc05.mod <- getValues(lc05.mod)
+
+# get gs_temp layers values
+v.gs_temp <- getValues(gs_temp)
 
 # lets get the values of the Coastal_vs_Spruce_bog layer that differentiates the different wetland classes
 v.CoastSpruceBog <- getValues(coast_spruce_bog)
 
 # now we index the values we want to use for this step of the reclass
 # [version2] these values have been altered from the original version and will be reclassed now into wetland tundra and coastal spruce bog
-ind <- which(v.lc05.mod == 14 & v.CoastSpruceBog == 2); values(lc05.mod)[ind] <- 3
-ind <- which(v.lc05.mod == 14 & v.CoastSpruceBog != 2); values(lc05.mod)[ind] <- 0
+ind <- which(v.lc05.mod == 15 & v.CoastSpruceBog == 2); values(lc05.mod)[ind] <- 18 # this will be reclassed into a placeholder class that will be called SPRUCE BOG 
+ind <- which(v.lc05.mod == 15 & v.CoastSpruceBog != 2 & gs_temp > 6.5); values(lc05.mod)[ind] <- 0 # reclassed to NO VEG using gs_temp 6.5   WETLAND which needs to be changed into WETLAND TUNDRA or NO VEG
+ind <- which(v.lc05.mod == 15 & v.CoastSpruceBog != 2 & gs_temp < 6.5); values(lc05.mod)[ind] <- 6 # reclassed to WETLAND TUNDRA CLASS
 
 
 rm(v.CoastSpruceBog)
@@ -96,7 +102,7 @@ v.lc05.mod <- getValues(lc05.mod)
 
 # Now we need to get the values of the MJJA gs_temp layer that differentiates the temperate shrublands between 
 #  tundra and deciduous
-v.gs_temp <- getValues(gs_temp)
+
 
 # now lets find the values we need for this reclassification step
 ind <- which(v.lc05.mod == 5 & v.gs_temp < 6.5) ; values(lc05.mod)[ind] <- 1
@@ -146,3 +152,5 @@ ind <- which(v.lc05.mod == 5); values(lc05.mod)[ind] <- 2
 # now I will write out the raster file
 
 writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_FINAL.tif", sep=""), overwrite=TRUE)
+
+
