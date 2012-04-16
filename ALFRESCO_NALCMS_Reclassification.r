@@ -57,16 +57,31 @@ v.lc05.mod <- getValues(lc05.mod)
 #reclassify the original NALCMS 2005 Landcover Map
 # we do this via indexing the data we want using the builtin R {base} function which() and replace the values using the R {Raster}
 # package function values() and assigning those values in the [index] the new value desired.
-ind <- which(v.lc05.mod == 1 | v.lc05.mod == 2); values(lc05.mod)[ind] <- 10 # Reclass the needleleaf classes to SPRUCE
-ind <- which(v.lc05.mod == 5 | v.lc05.mod == 6); values(lc05.mod)[ind] <- 12 # Reclass the deciduous and mixed as DECIDUOUS
-ind <- which(v.lc05.mod == 8); values(lc05.mod)[ind] <- 13 # Reclass the Temperate or sub-polar shrubland as SHRUB TUNDRA OR DECIDUOUS
-ind <- which(v.lc05.mod == 10); values(lc05.mod)[ind] <- 14 # Reclass Temperate or sub-polar grassland as GRAMMINOID TUNDRA and GRASSSLAND
-ind <- which(v.lc05.mod == 11); values(lc05.mod)[ind] <- 16 # Reclass Sub-polar or polar shrubland-lichen-moss as SHRUB TUNDRA
-ind <- which(v.lc05.mod == 12); values(lc05.mod)[ind] <- 17 # Reclass Sub-polar or polar grassland-lichen-moss as GRAMMINOID TUNDRA
-ind <- which(v.lc05.mod == 14); values(lc05.mod)[ind] <- 15 # Reclass Wetland to SPRUCE or WET TUNDRA (this is ultimately wet tundra and spruce bog differentiation)
+
+# begin by first collapsing down all classes from the original input that are not of interest to NOVEG
 ind <- which(v.lc05.mod == 13 | v.lc05.mod == 15 | v.lc05.mod == 16 | v.lc05.mod == 17 | v.lc05.mod == 18 | v.lc05.mod == 19 | v.lc05.mod == 128); values(lc05.mod)[ind] <- 0 # rcl 13 & 15 thru 19 as 0
 
-writeRaster(lc05.mod, filename=paste(output.dir,"NA_LandCover_2005_PRISM_extent_AKAlbers_1km_modal_simplifyClasses_step1.tif", sep=""), overwrite=TRUE)
+# Reclass the needleleaf classes to SPRUCE
+ind <- which(v.lc05.mod == 1 | v.lc05.mod == 2); values(lc05.mod)[ind] <- 9 # SPRUCE PLACEHOLDER CLASS
+
+# Reclass the deciduous and mixed as DECIDUOUS
+ind <- which(v.lc05.mod == 5 | v.lc05.mod == 6); values(lc05.mod)[ind] <- 3 # Final Class
+
+# Reclass the Temperate or sub-polar shrubland as SHRUB TUNDRA OR DECIDUOUS
+#ind <- which(v.lc05.mod == 8); values(lc05.mod)[ind] <- 13 
+
+# ind <- which(v.lc05.mod == 10); values(lc05.mod)[ind] <- 14 # Reclass Temperate or sub-polar grassland as GRAMMINOID TUNDRA and GRASSSLAND
+
+# Reclass Sub-polar or polar shrubland-lichen-moss as SHRUB TUNDRA
+ind <- which(v.lc05.mod == 11); values(lc05.mod)[ind] <- 4 
+
+# Reclass Sub-polar or polar grassland-lichen-moss as GRAMMINOID TUNDRA
+ind <- which(v.lc05.mod == 12); values(lc05.mod)[ind] <- 5
+
+
+# ind <- which(v.lc05.mod == 14); values(lc05.mod)[ind] <- 15 #  ? Reclass Wetland to SPRUCE or WET TUNDRA (this is ultimately wet tundra and spruce bog differentiation)
+
+#writeRaster(lc05.mod, filename=paste(output.dir,"NA_LandCover_2005_PRISM_extent_AKAlbers_1km_modal_simplifyClasses_step1.tif", sep=""), overwrite=TRUE)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
@@ -80,51 +95,57 @@ v.lc05.mod <- getValues(lc05.mod)
 v.gs_temp <- getValues(gs_temp)
 
 # lets get the values of the Coastal_vs_Spruce_bog layer that differentiates the different wetland classes
-v.CoastSpruceBog <- getValues(coast_spruce_bog)
+v.coast_spruce_bog <- getValues(coast_spruce_bog)
 
 # now we index the values we want to use for this step of the reclass
 # [version2] these values have been altered from the original version and will be reclassed now into wetland tundra and coastal spruce bog
-ind <- which(v.lc05.mod == 15 & v.CoastSpruceBog == 2); values(lc05.mod)[ind] <- 18 # this will be reclassed into a placeholder class that will be called SPRUCE BOG 
-ind <- which(v.lc05.mod == 15 & v.CoastSpruceBog != 2 & gs_temp > 6.5); values(lc05.mod)[ind] <- 0 # reclassed to NO VEG using gs_temp 6.5   WETLAND which needs to be changed into WETLAND TUNDRA or NO VEG
-ind <- which(v.lc05.mod == 15 & v.CoastSpruceBog != 2 & gs_temp < 6.5); values(lc05.mod)[ind] <- 6 # reclassed to WETLAND TUNDRA CLASS
 
 
-rm(v.CoastSpruceBog)
-rm(coast_spruce_bog)
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# touch base with Amy about whether this is an ok differentiation to create.  Where only the Wetland Tundra occurs at the coast and not in the interior?
 
-writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step2.tif", sep=""), overwrite=TRUE)
+ind <- which(v.lc05.mod == 14 & v.coast_spruce_bog == 2); values(lc05.mod)[ind] <- 9 # reclassed into SPRUCE placeholder class
 
-# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# STEP 3
 
+ind <- which(v.lc05.mod == 14 & v.coast_spruce_bog != 2); values(lc05.mod)[ind] <- 20 # reclassed to a PlaceHolder class of 20 (coastal wetland)
+
+
+# rm(v.coast_spruce_bog)
+# rm(coast_spruce_bog)
+
+# write out and intermediate raster for review
+# writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step2.tif", sep=""), overwrite=TRUE)
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Step 3 here the coastal wetland class is going to be reclassified into WETLAND TUNDRA or NO VEG
 v.lc05.mod <- getValues(lc05.mod)
 
-# Now we need to get the values of the MJJA gs_temp layer that differentiates the temperate shrublands between 
-#  tundra and deciduous
+# here we are taking the placeholder class of 20 and turning it into Wetland Tundra and NoVeg
+ind <- which(v.lc05.mod == 20 & v.gs_temp < 6.5); values(lc05.mod)[ind] <- 6 # this is a FINAL CLASS WETLAND TUNDRA
 
+# here we turn the remainder of the placeholder class into noVeg
+ind <- which(v.lc05.mod == 20 & v.gs_temp >= 6.5); values(lc05.mod)[ind] <- 0 
+
+
+# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+# STEP 4
+# lets turn the placeholder class 13 (Temperate or sub-polar shrubland) into DECIDUOUS or SHRUB TUNDRA
+
+v.lc05.mod <- getValues(lc05.mod)
 
 # now lets find the values we need for this reclassification step
-ind <- which(v.lc05.mod == 5 & v.gs_temp < 6.5) ; values(lc05.mod)[ind] <- 1
-ind <- which(v.lc05.mod == 5 & v.gs_temp > 6.5) ; values(lc05.mod)[ind] <- 4
+ind <- which(v.lc05.mod == 8 & v.gs_temp < 6.5); values(lc05.mod)[ind] <- 4 # this is the final class of SHRUB TUNDRA
+ind <- which(v.lc05.mod == 8 & v.gs_temp > 6.5); values(lc05.mod)[ind] <- 3 # this is the final class of DECIDUOUS
 
-rm(gs_temp)
+# writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step3.tif", sep=""), overwrite=TRUE)
 
-writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step3.tif", sep=""), overwrite=TRUE)
+# now I am going to complete the reclassification of the NALCMS class 10 Temperate or sub-polar grassland to GRAMMINOID TUNDRA and GRASSSLAND (NoVeg)
+ind <- which(v.lc05.mod == 10 & v.gs_temp < 6.5); values(lc05.mod)[ind] <- 5 # GRAMMINOID TUNDRA
+ind <- which(v.lc05.mod == 10 & v.gs_temp > 6.5); values(lc05.mod)[ind] <- 0 # GRASSLAND becomes NOVEG
 
-# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-# STEP 4
-
-v.lc05.mod <- getValues(lc05.mod)
-
-#Now we bring the north_south map into the mix to differentiate between the white and black spruce from the spruce bog
-v.north_south <- getValues(north_south)
-
-# now I get the values that correspond to some conditions and change their values to the proper ALFRESCO class
-ind <- which(v.lc05.mod == 3 & (v.gs_temp > 6.5 | v.north_south == 2)); values(lc05.mod)[ind] <- 5
-
-writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step4.tif", sep=""), overwrite=TRUE)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
@@ -132,11 +153,50 @@ writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent
 
 v.lc05.mod <- getValues(lc05.mod)
 
-# Here we will reclass the spruce class to black or white spruce
+#Now we bring the north_south map into the mix to differentiate between the white and black spruce from the SPRUCE class
+v.north_south <- getValues(north_south)
 
-ind <- which(v.lc05.mod == 2 & (v.gs_temp < 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 3
+# we need to examine the 2 placeholder classes for SPRUCE class and parse them out in to WHITE / BLACK.  
+# if any pixels in the 2 spruce classes are north facing and have gs_temps > 6.5 then it is WHITE SPRUCE
+ind <- which(v.lc05.mod == 9 & (v.gs_temp > 6.5 | v.north_south == 2)); values(lc05.mod)[ind] <- 2 # FINAL WHITE SPRUCE CLASS
 
-writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step5.tif", sep=""), overwrite=TRUE)
+# if any pixels in the 2 spruce classes are north facing and have gs_temps < 6.5 then it is BLACK SPRUCE
+#  ** should there be a class where if it is southfacing and gs_temps < 6.5 then it is BLACK SPRUCE????
+ind <- which(v.lc05.mod == 9 & v.north_south == 1); values(lc05.mod)[ind] <- 2 # FINAL BLACK SPRUCE CLASS
+
+# get those values again
+v.lc05.mod <- getValues(lc05.mod)
+
+# # now we take the remainder of those 2 SPRUCE CLASSES and give them class BLACK if Noth facing and WHITE if South facing
+ind <- which(v.lc05.mod == 9 & v.north_south == 2); values(lc05.mod)[ind] <- 1
+ind <- which(v.lc05.mod == 9 & v.north_south != 2); values(lc05.mod)[ind] <- 2
+
+
+#writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step4.tif", sep=""), overwrite=TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+# # STEP 5
+
+# v.lc05.mod <- getValues(lc05.mod)
+
+# # Here we will reclass the spruce class to black or white spruce
+
+# ind <- which(v.lc05.mod == 2 & (v.gs_temp < 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 3
+
+# writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step5.tif", sep=""), overwrite=TRUE)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
@@ -146,7 +206,7 @@ v.lc05.mod <- getValues(lc05.mod)
 
 # this is the final reclass step to bring the NALCMS map back to the ALFRESCO classification
 
-ind <- which(v.lc05.mod == 5); values(lc05.mod)[ind] <- 2
+#ind <- which(v.lc05.mod == 5); values(lc05.mod)[ind] <- 2
 
 
 # now I will write out the raster file
