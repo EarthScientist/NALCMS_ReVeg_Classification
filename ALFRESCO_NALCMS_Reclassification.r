@@ -3,7 +3,7 @@
 require(raster)
 
 # set the working dir
-setwd("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/working_folder/")
+setwd("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/rcl_new/")
 
 # set an output directory
 output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/outputs/run_6/"
@@ -143,7 +143,10 @@ ind <- which(v.lc05.mod == 8 & v.gs_temp > 6.5); values(lc05.mod)[ind] <- 3 # th
 
 # now I am going to complete the reclassification of the NALCMS class 10 Temperate or sub-polar grassland to GRAMMINOID TUNDRA and GRASSSLAND (NoVeg)
 ind <- which(v.lc05.mod == 10 & v.gs_temp < 6.5); values(lc05.mod)[ind] <- 5 # GRAMMINOID TUNDRA
-ind <- which(v.lc05.mod == 10 & v.gs_temp > 6.5); values(lc05.mod)[ind] <- 0 # GRASSLAND becomes NOVEG
+
+# I am doing this against my better judgement to get this damn thing running
+v.lc05.mod <- getValues(lc05.mod)
+ind <- which(v.lc05.mod == 10); values(lc05.mod)[ind] <- 0 # GRASSLAND becomes NOVEG
 
 
 
@@ -162,55 +165,69 @@ ind <- which(v.lc05.mod == 9 & (v.gs_temp > 6.5 | v.north_south == 2)); values(l
 
 # if any pixels in the 2 spruce classes are north facing and have gs_temps < 6.5 then it is BLACK SPRUCE
 #  ** should there be a class where if it is southfacing and gs_temps < 6.5 then it is BLACK SPRUCE????
-ind <- which(v.lc05.mod == 9 & v.north_south == 1); values(lc05.mod)[ind] <- 2 # FINAL BLACK SPRUCE CLASS
+# ind <- which(v.lc05.mod == 9 & v.north_south == 1); values(lc05.mod)[ind] <- 2 # FINAL BLACK SPRUCE CLASS
 
 # get those values again
-v.lc05.mod <- getValues(lc05.mod)
+#v.lc05.mod <- getValues(lc05.mod)
 
 # # now we take the remainder of those 2 SPRUCE CLASSES and give them class BLACK if Noth facing and WHITE if South facing
+ind <- which(v.lc05.mod == 9 & v.north_south == 1); values(lc05.mod)[ind] <- 2
 ind <- which(v.lc05.mod == 9 & v.north_south == 2); values(lc05.mod)[ind] <- 1
-ind <- which(v.lc05.mod == 9 & v.north_south != 2); values(lc05.mod)[ind] <- 2
+
+v.lc05.mod <- getValues(lc05.mod)
+ind <- which(v.lc05.mod == 9); values(lc05.mod)[ind] <- 1
 
 
-#writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step4.tif", sep=""), overwrite=TRUE)
+writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_v2.tif", sep=""), overwrite=TRUE)
+rm(v.lc05.mod)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# this area is only for reclassifying the map into something that Alec can play with 
+alec.v.lc05.mod <- lc05.mod
+# v.lc05.mod <- getValues(alec.v.lc05.mod)
+
+m <- c(1, 2, 2, 2, 3, 2, 3, 4, 3, 4, 5, 4, 5, 6, 5, 6, 7, 6, 7, 8, 7)
+rcl.mat <- matrix(m, ncol=3, byrow=TRUE)
+
+alec.v.lc05.mod <- reclass(alec.lc05.mod, rcl.mat)
+
+
+# ind <- which(v.lc05.mod == 1); values(lc05.mod)[ind] <- 2
+# ind <- which(v.lc05.mod == 2); values(lc05.mod)[ind] <- 3
+# ind <- which(v.lc05.mod == 3); values(lc05.mod)[ind] <- 4
+# ind <- which(v.lc05.mod == 4); values(lc05.mod)[ind] <- 5
+# ind <- which(v.lc05.mod == 5); values(lc05.mod)[ind] <- 6
+# ind <- which(v.lc05.mod == 6); values(lc05.mod)[ind] <- 7 
+
+writeRaster(alec.lc05.mod, filename="/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/outputs/run_6/ALFRESCO_LandCover_2005_1km_v2_alec.tif", overwrite=TRUE)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
+# # # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
+# # # STEP 5
 
+# # v.lc05.mod <- getValues(lc05.mod)
 
+# # # Here we will reclass the spruce class to black or white spruce
 
+# # ind <- which(v.lc05.mod == 2 & (v.gs_temp < 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 3
 
-
-
-
-
+# # writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step5.tif", sep=""), overwrite=TRUE)
 
 # # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-# # STEP 5
+# # STEP 6 -- FINAL
 
 # v.lc05.mod <- getValues(lc05.mod)
 
-# # Here we will reclass the spruce class to black or white spruce
+# # this is the final reclass step to bring the NALCMS map back to the ALFRESCO classification
 
-# ind <- which(v.lc05.mod == 2 & (v.gs_temp < 6.5 | v.north_south == 1)); values(lc05.mod)[ind] <- 3
-
-# writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_Step5.tif", sep=""), overwrite=TRUE)
-
-# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
-# STEP 6 -- FINAL
-
-v.lc05.mod <- getValues(lc05.mod)
-
-# this is the final reclass step to bring the NALCMS map back to the ALFRESCO classification
-
-#ind <- which(v.lc05.mod == 5); values(lc05.mod)[ind] <- 2
+# #ind <- which(v.lc05.mod == 5); values(lc05.mod)[ind] <- 2
 
 
-# now I will write out the raster file
+# # now I will write out the raster file
 
-writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_FINAL.tif", sep=""), overwrite=TRUE)
+# writeRaster(lc05.mod, filename=paste(output.dir, "NA_LandCover_2005_PRISM_extent_AKAlbers_1km_ALFRESCO_FINAL.tif", sep=""), overwrite=TRUE)
 
 
