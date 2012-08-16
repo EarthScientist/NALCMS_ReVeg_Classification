@@ -6,18 +6,18 @@ require(raster)
 setwd("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/rcl_new/")
 
 # set an output directory
-output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/outputs/run_6/"
+output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/outputs/run_7/"
 
 
-gs_values = c(6, 6.5, 7)
+gs_values = c(6.5)
 
 # the input NALCMS 2005 Land cover raster
-lc05 <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/na_landcover_2005_1km_MASTER.tif")
-north_south <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/AKCanada_1km_NorthSouth_FlatWater_999_MASTER.tif")
-mask <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/AKCanada_PRISM_Mask_1km_gs_temp_version.tif")
-gs_temp <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/AKCanada_gs_temp_mean_MJJAS_1961_1990_climatology_1km_bilinear_MASTER.tif")
-coast_spruce_bog <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/Coastal_vs_Woody_wetlands_MASTER.tif")
-
+lc05 <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/na_landcover_2005_1km_MASTER.tif")
+north_south <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/AKCanada_1km_NorthSouth_FlatWater_999_MASTER.tif")
+mask <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/AKCanada_PRISM_Mask_1km_gs_temp_version.tif")
+gs_temp <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/AKCanada_gs_temp_mean_MJJAS_1961_1990_climatology_1km_bilinear_MASTER.tif")
+coast_spruce_bog <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/Coastal_vs_Woody_wetlands_MASTER.tif")
+treeline <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/CAVM_treeline_AKCanada_1km_commonExtent_MASTER.tif")
 
 # And the resulting 16 AK NALCMS classes are:
 # 0 =  
@@ -46,14 +46,19 @@ coast_spruce_bog <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass
 # 14 14 : 6 
 # 15 19 : 0
 
-# STEP 1
 
+# this outer loop is used for testing the differences between different thresholds of gs_temp values
 for(gs_value in gs_values){
+	# print out the gs value being currently used to create an output map
+	print(paste("current gs_value = ", gs_value, sep=""))
 
-	#this next line just duplicates the input lc map and we will change the values in this map and write it to a TIFF
+	# STEP 1:
+	#  here the code will begin by getting rid of classes we are not interested in and
+	#  then will begin to aggregate classes that are too fine for this scale of analysis
+
+	#this next line just duplicates the input lc map and we will reclassify the values in this map then write it to a TIFF
 	lc05.mod <- lc05
-	# remove the MASTER LC map
-	# rm(lc05)
+	
 	# create a vector of values from the NALCMS 2005 Landcover Map
 	v.lc05.mod <- getValues(lc05.mod)
 
@@ -70,28 +75,18 @@ for(gs_value in gs_values){
 	# Reclass the deciduous and mixed as DECIDUOUS
 	ind <- which(v.lc05.mod == 5 | v.lc05.mod == 6); values(lc05.mod)[ind] <- 3 # Final Class
 
-	# Reclass the Temperate or sub-polar shrubland as SHRUB TUNDRA OR DECIDUOUS
-	#ind <- which(v.lc05.mod == 8); values(lc05.mod)[ind] <- 13 
-
-	# ind <- which(v.lc05.mod == 10); values(lc05.mod)[ind] <- 14 # Reclass Temperate or sub-polar grassland as GRAMMINOID TUNDRA and GRASSSLAND
-
 	# Reclass Sub-polar or polar shrubland-lichen-moss as SHRUB TUNDRA
 	ind <- which(v.lc05.mod == 11); values(lc05.mod)[ind] <- 4 
 
 	# Reclass Sub-polar or polar grassland-lichen-moss as GRAMMINOID TUNDRA
 	ind <- which(v.lc05.mod == 12); values(lc05.mod)[ind] <- 5
 
-
-	# ind <- which(v.lc05.mod == 14); values(lc05.mod)[ind] <- 15 #  ? Reclass Wetland to SPRUCE or WET TUNDRA (this is ultimately wet tundra and spruce bog differentiation)
-
-	#writeRaster(lc05.mod, filename=paste(output.dir,"NA_LandCover_2005_PRISM_extent_AKAlbers_1km_modal_simplifyClasses_step1.tif", sep=""), overwrite=TRUE)
-
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 	# STEP 2
-
-	# here we are going to take the class SPRUCE or WET TUNDRA and break it down into classes of SPRUCE BOG or WETLAND TUNDRA or WETLAND
-	# get the values from the reclasification of Step 1
+	#  here we are going to take the class SPRUCE or WET TUNDRA and break it down into classes of SPRUCE BOG or WETLAND TUNDRA or WETLAND
+	
+	# get the values from the reclasification of Step 1 (this is performed at each step so that the newly updated values from the previous step are added to the values list)
 	v.lc05.mod <- getValues(lc05.mod)
 
 	# get gs_temp layers values this is the one that will be used to determine the +/- growing season temperatures (6.0/gs_value/7.0)
@@ -100,20 +95,14 @@ for(gs_value in gs_values){
 	# lets get the values of the Coastal_vs_Spruce_bog layer that differentiates the different wetland classes
 	v.coast_spruce_bog <- getValues(coast_spruce_bog)
 
-	# now we index the values we want to use for this step of the reclass
-	# [version2] these values have been altered from the original version and will be reclassed now into wetland tundra and coastal spruce bog
-
-
 	# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	# touch base with Amy about whether this is an ok differentiation to create.  Where only the Wetland Tundra occurs at the coast and not in the interior?
-
+	# this command asks which of the values of the reclassed map are wetland and also not near the coast? This will create spruce bog or SPRUCE
 	ind <- which(v.lc05.mod == 14 & v.coast_spruce_bog == 2); values(lc05.mod)[ind] <- 9 # reclassed into SPRUCE placeholder class
-
 	# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
+	# coastal wetlands are now reclassed to a placeholder class
 	ind <- which(v.lc05.mod == 14 & v.coast_spruce_bog != 2); values(lc05.mod)[ind] <- 20 # reclassed to a PlaceHolder class of 20 (coastal wetland)
-
 
 	# rm(v.coast_spruce_bog)
 	# rm(coast_spruce_bog)
@@ -124,9 +113,10 @@ for(gs_value in gs_values){
 
 	# Step 3 here the coastal wetland class is going to be reclassified into WETLAND TUNDRA or NO VEG
 	v.lc05.mod <- getValues(lc05.mod)
+	v.treeline <- getValues(treeline)
 
 	# here we are taking the placeholder class of 20 and turning it into Wetland Tundra and NoVeg
-	ind <- which(v.lc05.mod == 20 & v.gs_temp < gs_value); values(lc05.mod)[ind] <- 6 # this is a FINAL CLASS WETLAND TUNDRA
+	ind <- which(v.lc05.mod == 20 & v.gs_temp < gs_value & v.treeline == 1); values(lc05.mod)[ind] <- 6 # this is a FINAL CLASS WETLAND TUNDRA
 
 	# here we turn the remainder of the placeholder class into noVeg
 	ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value); values(lc05.mod)[ind] <- 0 
@@ -147,11 +137,10 @@ for(gs_value in gs_values){
 	# now I am going to complete the reclassification of the NALCMS class 10 Temperate or sub-polar grassland to GRAMMINOID TUNDRA and GRASSSLAND (NoVeg)
 	ind <- which(v.lc05.mod == 10 & v.gs_temp < gs_value); values(lc05.mod)[ind] <- 5 # GRAMMINOID TUNDRA
 	ind <- which(v.lc05.mod == 10 & v.gs_temp > gs_value); values(lc05.mod)[ind] <- 7
+	
 	# I am doing this against my better judgement to get this damn thing running
 	v.lc05.mod <- getValues(lc05.mod)
 	ind <- which(v.lc05.mod == 10); values(lc05.mod)[ind] <- 7 # GRASSLAND Class
-
-
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
@@ -164,21 +153,21 @@ for(gs_value in gs_values){
 
 	# we need to examine the 2 placeholder classes for SPRUCE class and parse them out in to WHITE / BLACK.  
 	# if any pixels in the spruce classes are north facing and have gs_temps > gs_value then it is WHITE SPRUCE
-	ind <- which(v.lc05.mod == 9 & (v.gs_temp > gs_value | v.north_south == 2)); values(lc05.mod)[ind] <- 2 # FINAL WHITE SPRUCE CLASS
+	ind <- which(v.lc05.mod == 9 & (v.gs_temp > gs_value | v.north_south == 1)); values(lc05.mod)[ind] <- 2 # FINAL WHITE SPRUCE CLASS
 
 	# if any pixels in the 2 spruce classes are north facing and have gs_temps < gs_value then it is BLACK SPRUCE
-	#  ** should there be a class where if it is southfacing and gs_temps < gs_value then it is BLACK SPRUCE????
-	# ind <- which(v.lc05.mod == 9 & v.north_south == 1); values(lc05.mod)[ind] <- 2 # FINAL BLACK SPRUCE CLASS
+	ind <- which(v.lc05.mod == 9 & (v.gs_temp <= 6.5 & v.north_south == 1)); values(lc05.mod)[ind] <- 1
 
-	# get those values again
-	#v.lc05.mod <- getValues(lc05.mod)
-
-	# # now we take the remainder of those 2 SPRUCE CLASSES and give them class BLACK if Noth facing and WHITE if South facing
-	ind <- which(v.lc05.mod == 9 & v.north_south == 1); values(lc05.mod)[ind] <- 2
-	ind <- which(v.lc05.mod == 9 & v.north_south == 2); values(lc05.mod)[ind] <- 1
-
+	# here we get the values of the lc05 map again.
+	# v.lc05.mod <- getValues(lc05.mod)
+	# ind <- which(v.lc05.mod == 9); values(lc05.mod)[ind] <- 1
 	v.lc05.mod <- getValues(lc05.mod)
-	ind <- which(v.lc05.mod == 9); values(lc05.mod)[ind] <- 1
+	NoPac <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/NorthPacific_Temperate_Rainforest_MASTER.tif")
+	# get the values for the North Pacific Maritime region map that we will use to reclassify that region in the new veg map
+	v.NoPac <- getValues(NoPac)
+
+	ind <- which(v.lc05.mod > 0 & v.NoPac == 1); values(lc05.mod)[ind] <- 8
+
 
 	if(grep(".",gs_value) == TRUE){
 		gs <- sub(".", "_", gs_value, fixed=TRUE)
@@ -198,15 +187,13 @@ for(gs_value in gs_values){
 
 	# read in the new map:
 
-	alf_veg <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/combine_CAVM_NALCMS05/ALFRESCO_VegMap_NALCMS_CAVM_hybrid.img")
-	NoPac <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/NorthPacific_Temperate_Rainforest_MASTER.tif")
+	# alf_veg <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/combine_CAVM_NALCMS05/ALFRESCO_VegMap_NALCMS_CAVM_hybrid.img")
+	
+	# alf_veg.v <- getValues(alf_veg)
 
-	NoPac.v <- getValues(NoPac)
-	alf_veg.v <- getValues(alf_veg)
+	# ind <- which(NoPac.v == 1); values(alf_veg)[ind] <- 8
 
-	ind <- which(NoPac.v == 1); values(alf_veg)[ind] <- 8
-
-	writeRaster(alf_veg, filename="/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/Version4_Final/ALF_Veg_NALCMS_CAVM_hyb_rainforest.tif")
+	# writeRaster(alf_veg, filename="/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/Version4_Final/ALF_Veg_NALCMS_CAVM_hyb_rainforest.tif")
 
 
 }
