@@ -117,9 +117,16 @@ for(gs_value in gs_values){
 
 	# here we are taking the placeholder class of 20 and turning it into Wetland Tundra and NoVeg
 	ind <- which(v.lc05.mod == 20 & v.gs_temp < gs_value & v.treeline == 1); values(lc05.mod)[ind] <- 6 # this is a FINAL CLASS WETLAND TUNDRA
-
+	ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value & v.treeline == 1); values(lc05.mod)[ind] <- 0
+	# this next line is saying that if a pixel in lc05 has gs_temp < 6.5 and is in the coastal region but not above treeline make it a spruce bog
+	ind <- which(v.lc05.mod == 20 & v.gs_temp < gs_value & v.treeline == 0); values(lc05.mod)[ind] <- 1
+	ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value & v.treeline == 0); values(lc05.mod)[ind] <- 0
+	
 	# here we turn the remainder of the placeholder class into noVeg
-	ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value); values(lc05.mod)[ind] <- 0 
+	# get the values again.  cant find another way to do this
+	v.lc05.mod <- getValues(lc05.mod)
+	#remove the last of the 20's
+	ind <- which(v.lc05.mod == 20); values(lc05.mod)[ind] <- 0 
 
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
