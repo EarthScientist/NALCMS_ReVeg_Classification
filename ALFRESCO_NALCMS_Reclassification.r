@@ -6,7 +6,7 @@ require(raster)
 setwd("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/rcl_new/")
 
 # set an output directory
-output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/outputs/run_7/"
+output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/Outputs/"
 
 
 gs_values = c(6.5)
