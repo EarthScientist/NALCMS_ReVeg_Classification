@@ -18,7 +18,7 @@ mask <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_
 gs_temp <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/AKCanada_gs_temp_mean_MJJAS_1961_1990_climatology_1km_bilinear_MASTER.tif")
 coast_spruce_bog <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/Coastal_vs_Woody_wetlands_MASTER.tif")
 treeline <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/CAVM_treeline_AKCanada_1km_commonExtent_MASTER.tif")
-
+NoPac <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/ALFRESCO_NorthPacMaritime_forVegMap.tif")
 # And the resulting 16 AK NALCMS classes are:
 # 0 =  
 # 1 = Temperate or sub-polar needleleaf forest
@@ -118,7 +118,7 @@ for(gs_value in gs_values){
 	# here we are taking the placeholder class of 20 and turning it into Wetland Tundra and NoVeg
 	ind <- which(v.lc05.mod == 20 & v.gs_temp < gs_value & v.treeline == 1); values(lc05.mod)[ind] <- 6 # this is a FINAL CLASS WETLAND TUNDRA
 	ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value & v.treeline == 1); values(lc05.mod)[ind] <- 0
-	# this next line is saying that if a pixel in lc05 has gs_temp < 6.5 and is in the coastal region but not above treeline make it a spruce bog
+	# this next line is saying that if a pixel in lc05 has gs_temp < 6.5 and is in the coastal region but not above treeline make it a black spruce
 	ind <- which(v.lc05.mod == 20 & v.gs_temp < gs_value & v.treeline == 0); values(lc05.mod)[ind] <- 1
 	ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value & v.treeline == 0); values(lc05.mod)[ind] <- 0
 	
@@ -152,7 +152,7 @@ for(gs_value in gs_values){
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 	# STEP 5
-
+	#  this is where we reclassify the SPRUCE category to WHITE and BLACK based on <>6.5 degrees and North/South Slopes 
 	v.lc05.mod <- getValues(lc05.mod)
 
 	#Now we bring the north_south map into the mix to differentiate between the white and black spruce from the SPRUCE class
@@ -163,15 +163,17 @@ for(gs_value in gs_values){
 	ind <- which(v.lc05.mod == 9 & (v.gs_temp > gs_value | v.north_south == 1)); values(lc05.mod)[ind] <- 2 # FINAL WHITE SPRUCE CLASS
 
 	# if any pixels in the 2 spruce classes are north facing and have gs_temps < gs_value then it is BLACK SPRUCE
-	ind <- which(v.lc05.mod == 9 & (v.gs_temp <= 6.5 & v.north_south == 1)); values(lc05.mod)[ind] <- 1
+	ind <- which(v.lc05.mod == 9 & (v.gs_temp <= gs_value & v.north_south == 1)); values(lc05.mod)[ind] <- 1
 
 	# here we get the values of the lc05 map again.
 	# v.lc05.mod <- getValues(lc05.mod)
 	# ind <- which(v.lc05.mod == 9); values(lc05.mod)[ind] <- 1
 	v.lc05.mod <- getValues(lc05.mod)
-	NoPac <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/NALCMS_VegReClass_Inputs/NorthPacific_Temperate_Rainforest_MASTER.tif")
+	
 	# get the values for the North Pacific Maritime region map that we will use to reclassify that region in the new veg map
 	v.NoPac <- getValues(NoPac)
+
+	# THE NORTH PACIFIC MARITIME REGION MAP NEEDS FIXING!!!!  THERE ARE ROGUE PIXELS ON THE PERIPHERY THAT CANT BE PROPERLY RECLASSED possibly use the larger extent map that goes into ocean
 
 	ind <- which(v.lc05.mod > 0 & v.NoPac == 1); values(lc05.mod)[ind] <- 8
 
