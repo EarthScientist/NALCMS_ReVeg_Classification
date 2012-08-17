@@ -3,7 +3,7 @@
 require(raster)
 
 # set the working dir
-setwd("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/rcl_new/")
+setwd("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/Outputs/")
 
 # set an output directory
 output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/Outputs/"
@@ -160,10 +160,12 @@ for(gs_value in gs_values){
 
 	# we need to examine the 2 placeholder classes for SPRUCE class and parse them out in to WHITE / BLACK.  
 	# if any pixels in the spruce classes are north facing and have gs_temps > gs_value then it is WHITE SPRUCE
-	ind <- which(v.lc05.mod == 9 & (v.gs_temp > gs_value | v.north_south == 1)); values(lc05.mod)[ind] <- 2 # FINAL WHITE SPRUCE CLASS
-
+	ind <- which(v.lc05.mod == 9 & v.north_south == 1); values(lc05.mod)[ind] <- 2 # FINAL WHITE SPRUCE CLASS
+	ind <- which(v.lc05.mod == 9 & v.gs_temp > gs_value); values(lc05.mod)[ind] <- 2 # FINAL WHITE SPRUCE CLASS
+	
+	v.lc05.mod <- getValues(lc05.mod)
 	# if any pixels in the 2 spruce classes are north facing and have gs_temps < gs_value then it is BLACK SPRUCE
-	ind <- which(v.lc05.mod == 9 & (v.gs_temp <= gs_value & v.north_south == 1)); values(lc05.mod)[ind] <- 1
+	ind <- which(v.lc05.mod == 9 & v.north_south == 2); values(lc05.mod)[ind] <- 1
 
 	# here we get the values of the lc05 map again.
 	# v.lc05.mod <- getValues(lc05.mod)
