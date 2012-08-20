@@ -19,6 +19,7 @@ gs_temp <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August20
 coast_spruce_bog <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/Coastal_vs_Woody_wetlands_MASTER.tif")
 treeline <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/CAVM_treeline_AKCanada_1km_commonExtent_MASTER.tif")
 NoPac <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/ALFRESCO_NorthPacMaritime_forVegMap.tif")
+
 # And the resulting 16 AK NALCMS classes are:
 # 0 =  
 # 1 = Temperate or sub-polar needleleaf forest
@@ -52,6 +53,13 @@ for(gs_value in gs_values){
 	# print out the gs value being currently used to create an output map
 	print(paste("current gs_value = ", gs_value, sep=""))
 
+	# this little loop simply changes the "." to a "_"
+	if(grep(".",gs_value) == TRUE){
+		gs <- sub(".", "_", gs_value, fixed=TRUE)
+	}else{
+		gs <- gs_value
+	}
+
 	# STEP 1:
 	#  here the code will begin by getting rid of classes we are not interested in and
 	#  then will begin to aggregate classes that are too fine for this scale of analysis
@@ -81,7 +89,7 @@ for(gs_value in gs_values){
 	# Reclass Sub-polar or polar grassland-lichen-moss as GRAMMINOID TUNDRA
 	ind <- which(v.lc05.mod == 12); values(lc05.mod)[ind] <- 5
 
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,"_Step1.tif", sep=""), overwrite=TRUE)
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step1.tif", sep=""), overwrite=TRUE)
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
@@ -109,7 +117,7 @@ for(gs_value in gs_values){
 	# rm(coast_spruce_bog)
 
 	# write out and intermediate raster for review
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,"_Step2.tif", sep=""), overwrite=TRUE)
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step2.tif", sep=""), overwrite=TRUE)
 
 	# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -130,7 +138,7 @@ for(gs_value in gs_values){
 	#remove the last of the 20's
 	ind <- which(v.lc05.mod == 20); values(lc05.mod)[ind] <- 0 
 
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,"_Step3.tif", sep=""), overwrite=TRUE)
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step3.tif", sep=""), overwrite=TRUE)
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	# STEP 4
@@ -150,7 +158,7 @@ for(gs_value in gs_values){
 	v.lc05.mod <- getValues(lc05.mod)
 	ind <- which(v.lc05.mod == 10); values(lc05.mod)[ind] <- 7 # GRASSLAND Class
 
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,"_Step4.tif", sep=""), overwrite=TRUE)
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step4.tif", sep=""), overwrite=TRUE)
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
@@ -183,7 +191,7 @@ for(gs_value in gs_values){
 	ind <- which(v.lc05.mod == 9); values(lc05.mod)[ind] <- 2
 	#------------------------------------------------------------------------------------------------------------------------
 
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,"_Step5.tif", sep=""), overwrite=TRUE)
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step5.tif", sep=""), overwrite=TRUE)
 
 	# STEP 6
 	#  this is where we define the North Pacific Maritime Region as its own map region that is independent of the others
@@ -201,15 +209,7 @@ for(gs_value in gs_values){
 
 	ind <- which(v.lc05.mod > 0 & v.NoPac == 1); values(lc05.mod)[ind] <- 8
 
-
-	if(grep(".",gs_value) == TRUE){
-		gs <- sub(".", "_", gs_value, fixed=TRUE)
-	}else{
-		gs <- gs_value
-	}
-
-
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,".tif", sep=""), overwrite=TRUE)
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,".tif", sep=""), overwrite=TRUE)
 	rm(v.lc05.mod)
 
 }
