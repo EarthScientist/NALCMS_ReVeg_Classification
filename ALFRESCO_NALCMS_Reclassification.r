@@ -81,7 +81,7 @@ for(gs_value in gs_values){
 	# Reclass Sub-polar or polar grassland-lichen-moss as GRAMMINOID TUNDRA
 	ind <- which(v.lc05.mod == 12); values(lc05.mod)[ind] <- 5
 
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step1.tif", sep=""), overwrite=TRUE)
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,"_Step1.tif", sep=""), overwrite=TRUE)
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
@@ -109,7 +109,7 @@ for(gs_value in gs_values){
 	# rm(coast_spruce_bog)
 
 	# write out and intermediate raster for review
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step2.tif", sep=""), overwrite=TRUE)
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,"_Step2.tif", sep=""), overwrite=TRUE)
 
 	# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -130,7 +130,7 @@ for(gs_value in gs_values){
 	#remove the last of the 20's
 	ind <- which(v.lc05.mod == 20); values(lc05.mod)[ind] <- 0 
 
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step3.tif", sep=""), overwrite=TRUE)
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,"_Step3.tif", sep=""), overwrite=TRUE)
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	# STEP 4
@@ -150,7 +150,7 @@ for(gs_value in gs_values){
 	v.lc05.mod <- getValues(lc05.mod)
 	ind <- which(v.lc05.mod == 10); values(lc05.mod)[ind] <- 7 # GRASSLAND Class
 
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step4.tif", sep=""), overwrite=TRUE)
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,"_Step4.tif", sep=""), overwrite=TRUE)
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
@@ -183,7 +183,7 @@ for(gs_value in gs_values){
 	ind <- which(v.lc05.mod == 9); values(lc05.mod)[ind] <- 2
 	#------------------------------------------------------------------------------------------------------------------------
 
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step5.tif", sep=""), overwrite=TRUE)
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,"_Step5.tif", sep=""), overwrite=TRUE)
 
 	# STEP 6
 	#  this is where we define the North Pacific Maritime Region as its own map region that is independent of the others
@@ -209,7 +209,7 @@ for(gs_value in gs_values){
 	}
 
 
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,".tif", sep=""), overwrite=TRUE)
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,".tif", sep=""), overwrite=TRUE)
 	rm(v.lc05.mod)
 
 }
