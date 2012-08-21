@@ -193,8 +193,32 @@ for(gs_value in gs_values){
 
 	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step5.tif", sep=""), overwrite=TRUE)
 
-	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	# STEP 6
+	# this is where it is necessary to make up for some of the deficiencies in the NALCMS map.  In particular the spruce contingent on the north slope
+	# here i will use some focal stats to give values to the pixels based on the majority of non-spruce and non-water pixels in the window
+	v.lc05.mod <- getValues(lc05.mod)
+	v.treeline <- getValues(treeline)
+
+	
+	if(length(which((v.lc05.mod == 1 | v.lc05.mod == 2) & v.treeline == 1) > 0)){
+		ind <- which((v.lc05.mod == 1 | v.lc05.mod == 2) & v.treeline == 1)
+		for(i in ind){
+			# here we aer looking for cell numbers that are adjacent to the list of cell numbers I am going to give the function
+			ad <- adjacent(lc05.mod, i, directions=8, pairs=FALSE, target=NULL, sorted=TRUE, include=TRUE, id=FALSE)
+			# here is where we ask which neighbors the focal cell has
+			adjCellVals <- values(lc05.mod)[ad]
+			# which ones of these cells are not 0,1,2 (oob, black spruce, white spruce)
+			newInd <- which(adjCellVals > 2)
+			# what is the most common value in the set?
+			count(adjCellVals[newInd])
+			newValue <- max(count(adjCellVals[newInd])[,2])
+			values(lc05.mod)[newInd] <- newValue
+		}
+		v.lc05.mod <- getValues(lc05.mod)
+	}
+
+	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+	# STEP 7
 	#  this is where we define the North Pacific Maritime Region as its own map region that is independent of the others
 
 	# here we get the values of the lc05 map again.
