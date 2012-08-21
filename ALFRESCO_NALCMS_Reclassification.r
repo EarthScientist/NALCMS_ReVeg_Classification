@@ -219,7 +219,7 @@ for(gs_value in gs_values){
 			# what is the most common value in the set?
 			count(adjCellVals[newInd])
 			newValue <- max(count(adjCellVals[newInd])[,2])
-			values(lc05.mod)[newInd] <- newValue
+			values(lc05.mod)[newInd] <- newValue[,1]
 		}
 		v.lc05.mod <- getValues(lc05.mod)
 	}
