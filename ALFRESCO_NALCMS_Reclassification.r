@@ -208,8 +208,10 @@ for(gs_value in gs_values){
 
 	
 	if(length(which((v.lc05.mod == 1 | v.lc05.mod == 2) & v.treeline == 1) > 0)){
+		print(paste("     ncells remaining: ",length(which((v.lc05.mod == 1 | v.lc05.mod == 2) & v.treeline == 1)),sep=""))
 		ind <- which((v.lc05.mod == 1 | v.lc05.mod == 2) & v.treeline == 1)
 		for(i in ind){
+			print(paste("     ",i,sep=""))
 			# here we aer looking for cell numbers that are adjacent to the list of cell numbers I am going to give the function
 			ad <- adjacent(lc05.mod, i, directions=8, pairs=FALSE, target=NULL, sorted=TRUE, include=TRUE, id=FALSE)
 			# here is where we ask which neighbors the focal cell has
@@ -217,10 +219,12 @@ for(gs_value in gs_values){
 			# which ones of these cells are not 0,1,2 (oob, black spruce, white spruce)
 			newInd <- which(adjCellVals > 2)
 			# what is the most common value in the set?
-			count(adjCellVals[newInd])
-			newValue <- max(count(adjCellVals[newInd])[,2])
-			values(lc05.mod)[newInd] <- newValue[,1]
+			adjCellVals.count <- count(adjCellVals[newInd])
+			newValue <- max(adjCellVals.count[,2])
+			adjCellVals.count.sub <- subset(adjCellVals.count, adjCellVals.count[,2] == newValue)
+			values(lc05.mod)[newInd] <- adjCellVals.count.sub[,1]
 		}
+		# re-getValues for the newly modified lc05.mod for the next iteration...
 		v.lc05.mod <- getValues(lc05.mod)
 	}
 
