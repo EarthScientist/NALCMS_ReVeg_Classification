@@ -129,7 +129,7 @@ for(gs_value in gs_values){
 	ind <- which(v.lc05.mod == 20 & v.gs_temp < gs_value & v.treeline == 1); values(lc05.mod)[ind] <- 6 # this is a FINAL CLASS WETLAND TUNDRA
 	ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value & v.treeline == 1); values(lc05.mod)[ind] <- 0
 	# this next line is saying that if a pixel in lc05 has gs_temp < 6.5 and is in the coastal region but not above treeline make it a black spruce
-	ind <- which(v.lc05.mod == 20 & v.gs_temp < gs_value & v.treeline == 0); values(lc05.mod)[ind] <- 1
+	#ind <- which(v.lc05.mod == 20 & v.gs_temp < gs_value & v.treeline == 0); values(lc05.mod)[ind] <- 1
 	ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value & v.treeline == 0); values(lc05.mod)[ind] <- 0
 	
 	# here we turn the remainder of the placeholder class into noVeg
@@ -193,6 +193,7 @@ for(gs_value in gs_values){
 
 	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step5.tif", sep=""), overwrite=TRUE)
 
+	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	# STEP 6
 	#  this is where we define the North Pacific Maritime Region as its own map region that is independent of the others
 
@@ -201,15 +202,12 @@ for(gs_value in gs_values){
 	# ind <- which(v.lc05.mod == 9); values(lc05.mod)[ind] <- 1
 	v.lc05.mod <- getValues(lc05.mod)
 	
-
 	# get the values for the North Pacific Maritime region map that we will use to reclassify that region in the new veg map
 	v.NoPac <- getValues(NoPac)
-
-	# THE NORTH PACIFIC MARITIME REGION MAP NEEDS FIXING!!!!  THERE ARE ROGUE PIXELS ON THE PERIPHERY THAT CANT BE PROPERLY RECLASSED possibly use the larger extent map that goes into ocean
 
 	ind <- which(v.lc05.mod > 0 & v.NoPac == 1); values(lc05.mod)[ind] <- 8
 
 	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,".tif", sep=""), overwrite=TRUE)
+	
 	rm(v.lc05.mod)
-
 }
