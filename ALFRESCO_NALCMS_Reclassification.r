@@ -63,6 +63,7 @@ for(gs_value in gs_values){
 	# STEP 1:
 	#  here the code will begin by getting rid of classes we are not interested in and
 	#  then will begin to aggregate classes that are too fine for this scale of analysis
+	print("STEP 1...")
 
 	#this next line just duplicates the input lc map and we will reclassify the values in this map then write it to a TIFF
 	lc05.mod <- lc05
@@ -95,10 +96,11 @@ for(gs_value in gs_values){
 
 	# STEP 2
 	#  here we are going to take the class SPRUCE or WET TUNDRA and break it down into classes of SPRUCE BOG or WETLAND TUNDRA or WETLAND
+	print(" STEP 2...")
+	
 	# get the values from the reclasification of Step 1 (this is performed at each step so that the newly updated values from the previous step are added to the values list)
 	v.lc05.mod <- getValues(lc05.mod)
-
-	# get gs_temp layers values this is the one that will be used to determine the +/- growing season temperatures (6.0/gs_value/7.0)
+		# get gs_temp layers values this is the one that will be used to determine the +/- growing season temperatures (6.0/gs_value/7.0)
 	v.gs_temp <- getValues(gs_temp)
 
 	# lets get the values of the Coastal_vs_Spruce_bog layer that differentiates the different wetland classes
@@ -122,6 +124,8 @@ for(gs_value in gs_values){
 	# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	# Step 3 here the coastal wetland class is going to be reclassified into WETLAND TUNDRA or NO VEG
+	print("  STEP 3...")
+
 	v.lc05.mod <- getValues(lc05.mod)
 	v.treeline <- getValues(treeline)
 
@@ -143,7 +147,7 @@ for(gs_value in gs_values){
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	# STEP 4
 	# lets turn the placeholder class 13 (Temperate or sub-polar shrubland) into DECIDUOUS or SHRUB TUNDRA
-
+	print("   STEP 4...")
 	v.lc05.mod <- getValues(lc05.mod)
 
 	# now lets find the values we need for this reclassification step
@@ -163,6 +167,7 @@ for(gs_value in gs_values){
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 	# STEP 5
+		print("    STEP 5...")
 	#  this is where we reclassify the SPRUCE category to WHITE and BLACK based on <>6.5 degrees and North/South Slopes 
 	v.lc05.mod <- getValues(lc05.mod)
 
@@ -194,6 +199,8 @@ for(gs_value in gs_values){
 	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step5.tif", sep=""), overwrite=TRUE)
 
 	# STEP 6
+		print("     STEP 6...")
+
 	# this is where it is necessary to make up for some of the deficiencies in the NALCMS map.  In particular the spruce contingent on the north slope
 	# here i will use some focal stats to give values to the pixels based on the majority of non-spruce and non-water pixels in the window
 	v.lc05.mod <- getValues(lc05.mod)
@@ -220,6 +227,7 @@ for(gs_value in gs_values){
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	# STEP 7
 	#  this is where we define the North Pacific Maritime Region as its own map region that is independent of the others
+	print("      STEP 7...")
 
 	# here we get the values of the lc05 map again.
 	# v.lc05.mod <- getValues(lc05.mod)
@@ -233,5 +241,5 @@ for(gs_value in gs_values){
 
 	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,".tif", sep=""), overwrite=TRUE)
 	
-	rm(v.lc05.mod)
+	#rm(v.lc05.mod)
 }
