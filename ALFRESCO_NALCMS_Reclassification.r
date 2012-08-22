@@ -1,13 +1,15 @@
 # this is a testing branch to come up with some new ways of classifying the NALCMS data
 # lets bring in the library used to perform this task
 require(raster)
+require(rgeos)
+require(sp)
+require(maptools)
 
 # set the working dir
 setwd("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/Outputs/")
 
 # set an output directory
 output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/Outputs/"
-
 
 gs_values = c(6.5)
 
@@ -206,26 +208,38 @@ for(gs_value in gs_values){
 	v.lc05.mod <- getValues(lc05.mod)
 	v.treeline <- getValues(treeline)
 
-	
-	if(length(which((v.lc05.mod == 1 | v.lc05.mod == 2) & v.treeline == 1) > 0)){
-		print(paste("     ncells remaining: ",length(which((v.lc05.mod == 1 | v.lc05.mod == 2) & v.treeline == 1)),sep=""))
-		ind <- which((v.lc05.mod == 1 | v.lc05.mod == 2) & v.treeline == 1)
-		for(i in ind){
-			print(paste("     ",i,sep=""))
-			# here we aer looking for cell numbers that are adjacent to the list of cell numbers I am going to give the function
-			ad <- adjacent(lc05.mod, i, directions=8, pairs=FALSE, target=NULL, sorted=TRUE, include=TRUE, id=FALSE)
-			# here is where we ask which neighbors the focal cell has
-			adjCellVals <- values(lc05.mod)[ad]
-			# which ones of these cells are not 0,1,2 (oob, black spruce, white spruce)
-			newInd <- which(adjCellVals > 2)
-			# what is the most common value in the set?
-			adjCellVals.count <- count(adjCellVals[newInd])
-			newValue <- max(adjCellVals.count[,2])
-			adjCellVals.count.sub <- subset(adjCellVals.count, adjCellVals.count[,2] == newValue)
-			values(lc05.mod)[newInd] <- adjCellVals.count.sub[,1]
-		}
-		# re-getValues for the newly modified lc05.mod for the next iteration...
-		v.lc05.mod <- getValues(lc05.mod)
+	focalNeighbors <- 16 # this is a value of 4(rook),8(queen),16,OR bishop
+	ind <- which((v.lc05.mod == 1 | v.lc05.mod == 2) & v.treeline == 1)
+	new.m <- matrix(NA,nrow=length(ind),ncol=focalNeighbors+2)
+	new.m[,1] <- ind
+	for(n in 1:nrow(new.m)){
+		print(paste("row :",n,sep=""))
+		adj <- adjacent(lc05.mod, new.m[n,1], directions=focalNeighbors, pairs=FALSE, target=NULL, sorted=FALSE, include=FALSE, id=FALSE)	
+		new.m[n,2:as.integer(focalNeighbors+1)] <- adj
+
+		##############  NEW  #################################
+		#adj <- adjacent(lc05.mod, new.m[n,1], directions=focalNeighbors, pairs=FALSE, target=NULL, sorted=FALSE, include=FALSE, id=FALSE)
+		cellInd <- c(as.integer(adj[1,1]),as.vector(adj[,2]))
+		# this line grabs those values from the indexes 
+		adjCellVals <- values(lc05.mod)[cellInd]
+		# which ones of these cells are not 0,1,2 (oob, black spruce, white spruce)
+		desiredInd <- which(adjCellVals > 2)
+		# what is the most common value in the set?
+		adjCellVals.count <- count(adjCellVals[desiredInd])
+		newValue <- max(adjCellVals.count[,2])
+		adjCellVals.count.sub <- subset(adjCellVals.count, adjCellVals.count[,2] == newValue)
+		new.m[n,as.integer(focalNeighbors+2)] <- adjCellVals.count.sub[,1][1]
+		
+	}
+	# this loop speeds up processing insanely from the previous gory loop that was creating this map originally...
+	for(u in unique(na.omit(new.m[,as.integer(focalNeighbors+2)]))){
+		print(u)
+		# select the indexes with common final value 
+		new.m.select <- as.vector(new.m[new.m[,as.integer(focalNeighbors+2)]==u,1:as.integer(focalNeighbors+1)])
+		new.m.value <- as.integer(new.m[new.m[,as.integer(focalNeighbors+2)]==u,as.integer(focalNeighbors+2)])
+
+		print(paste("changing vals count: ",u,sep=""))
+		values(lc05.mod)[new.m.select] <- new.m.value
 	}
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
