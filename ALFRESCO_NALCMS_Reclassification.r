@@ -105,14 +105,10 @@ for(gs_value in gs_values){
 	v.coast_spruce_bog <- getValues(coast_spruce_bog)
 
 	# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	# touch base with Amy about whether this is an ok differentiation to create.  Where only the Wetland Tundra occurs at the coast and not in the interior?
 	# this command asks which of the values of the reclassed map are wetland and also not near the coast? This will create spruce bog or SPRUCE
 	ind <- which(v.lc05.mod == 14 & v.coast_spruce_bog == 2); values(lc05.mod)[ind] <- 9 # reclassed into SPRUCE placeholder class
-	# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 	# coastal wetlands are now reclassed to a placeholder class
 	ind <- which(v.lc05.mod == 14 & v.coast_spruce_bog != 2); values(lc05.mod)[ind] <- 20 # reclassed to a PlaceHolder class of 20 (coastal wetland)
-
 	# write out and intermediate raster for review
 	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step2.tif", sep=""), overwrite=TRUE)
 
@@ -130,12 +126,10 @@ for(gs_value in gs_values){
 	ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value & v.treeline == 0); values(lc05.mod)[ind] <- 0
 
 	# here we turn the remainder of the placeholder class into noVeg
-	# get the values again.  cant find another way to do this
 	v.lc05.mod <- getValues(lc05.mod)
 
-	#remove the last of the 20's possibly over some NA cells during the original query
+	# remove the remainder of the class 20 which were over some NA cells incorrectly during the original query
 	ind <- which(v.lc05.mod == 20); values(lc05.mod)[ind] <- 0 
-
 	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step3.tif", sep=""), overwrite=TRUE)
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -150,19 +144,12 @@ for(gs_value in gs_values){
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	# STEP 5
-	# here we begin by taking the newly reclassified "GRASSLAND/GRAMMINOID TUNDRA" class (5) and breaking that out into GRASSLAND (class 7) or
-	# GRAMMINOID TUNDRA (class 5) using the growing season temperature cutoff value to parse the class into the sub-classes 
+	# here we are reclassifying the gramminoid tundra/grassland into simply gramminoid tundra
+	# *this is at the suggestion of Amy Breen (abreen@alaska.edu)*  
 	print("    STEP 5...")
 
 	# # Reclass Sub-polar or polar grassland-lichen-moss as GRAMMINOID TUNDRA
-	ind <- which(v.lc05.mod == 12 & v.gs_temp < gs_value); values(lc05.mod)[ind] <- 5 # GRAMMINOID TUNDRA
-	ind <- which(v.lc05.mod == 12 & v.gs_temp >= gs_value); values(lc05.mod)[ind] <- 7 # GRASSLAND
-
-	# now we turn the original class of: "Temperate or sub-polar Grassland" into the new classes of GRAMMINOID TUNDRA or GRASSLAND
-	# based on the gs_temp values greater or less than the gs_value cutoff.
-	ind <- which(v.lc05.mod == 10 & v.gs_temp < gs_value); values(lc05.mod)[ind] <- 5 # GRAMMINOID TUNDRA
-	ind <- which(v.lc05.mod == 10 & v.gs_temp >= gs_value); values(lc05.mod)[ind] <- 7 # GRASSLAND
-
+	ind <- which(v.lc05.mod == 12 & v.lc05.mod == 10); values(lc05.mod)[ind] <- 5 # GRAMMINOID TUNDRA
 	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step4.tif", sep=""), overwrite=TRUE)
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -187,8 +174,8 @@ for(gs_value in gs_values){
 	v.lc05.mod <- getValues(lc05.mod)
 	ind <- which(v.lc05.mod == 9 & v.north_south == 999); values(lc05.mod)[ind] <- 0
 	# here we turn all of the remainders into WHITE SPRUCE
-	# v.lc05.mod <- getValues(lc05.mod)
-	# ind <- which(v.lc05.mod == 9); values(lc05.mod)[ind] <- 2
+	v.lc05.mod <- getValues(lc05.mod)
+	ind <- which(v.lc05.mod == 9); values(lc05.mod)[ind] <- 2
 
 	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step5.tif", sep=""), overwrite=TRUE)
 
@@ -286,7 +273,7 @@ for(gs_value in gs_values){
 
 	# finally turn the barren lichen moss /heath class into value 10
 	v.lc05.mod <- getValues(lc05.mod)
-	ind <- which(v.lc05.mod == 13); values(lc05.mod)[ind] <- 9
+	ind <- which(v.lc05.mod == 13); values(lc05.mod)[ind] <- 7
 	
 	# # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	# SEP 9 
@@ -299,6 +286,6 @@ for(gs_value in gs_values){
 	
 	# now lets mask it to the final mask removing the saskatoon area (agriculture)
 	ind <- which(mask.v == 3); values(lc05.mod)[ind] <- 0 # && v.lc05.mod != 255
-	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_FINALOUT2.tif", sep=""), overwrite=T, options="COMPRESS=LZW")
+	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_FINALOUT3.tif", sep=""), overwrite=T, options="COMPRESS=LZW")
 }
 
