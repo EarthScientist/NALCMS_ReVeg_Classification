@@ -51,6 +51,22 @@ NoPac <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012
 # 15 19 : 0
 
 
+# FINAL OUTPUT CLASSIFICATION AFTER THIS RECLASSIFICATION IS AS FOLLOWS:
+# NALCMS Vegetation Map Reclassification - ALFRESCO FIRE MODEL
+# -------------------------------------------------------------
+
+# 0 No Vegetation
+# 1 Black Spruce
+# 2 White Spruce
+# 3 Deciduous
+# 4 Shrub Tundra
+# 5 Gramminoid Tundra
+# 6 Wetland Tundra
+# 7 Grassland
+# 8 North Pacific Maritime Region - Temperate Rainforests
+# 255 out of bounds
+
+
 for(gs_value in gs_values){
 	# this outer loop is used for testing the differences between different thresholds of gs_temp values
 	# print out the gs value being currently used to create an output map
@@ -226,25 +242,14 @@ for(gs_value in gs_values){
 				new.m[n,focalNeighbors+2] <- NA
 			}else{	
 				# this is the error issue!!!!!
-				# maxCount <- which(adjCellVals.count == max(adjCellVals.count[,2]),arr.ind=T)
 				maxCount <- which(as.vector(adjCellVals.count) == max(as.vector(adjCellVals.count)))
 				
 				# # here if there is a tie, we are going to take the first one in the list.  Gotta choose one.
 				if(length(maxCount)>1){ maxCount <- maxCount[1] } else{ maxCount <- maxCount }
-				
-				cellVals <- as.numeric(names(adjCellVals.count))
-				
-				# counts <- as.vector(adjCellVals.count)
-				#tmp.ind <- cellVals[which(counts == max(counts))]
-				
-
-				# now we need the first column value from the new maxCount
-				#maxCount.value <- adjCellVals.count[maxCount[1],1]
-
+				cellVals <- as.numeric(names(adjCellVals.count))		
 				new.m[n,focalNeighbors+2] <- cellVals[maxCount]
 			}
 		}
-
 		# which are the non-NA's?
 		NA.ind <- which(is.na(new.m[,focalNeighbors+2])==FALSE)
 		# change those values in the raster
@@ -276,7 +281,7 @@ for(gs_value in gs_values){
 	ind <- which(v.lc05.mod == 13); values(lc05.mod)[ind] <- 7
 	
 	# # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-	# SEP 9 
+	# STEP 9 
 	# here we need to set all of the not "no_veg" values to 255 and NoVeg to 0
 	v.lc05.mod <- getValues(lc05.mod)
 	mask.v <- getValues(mask) # this is going to set all of the NoData values to 1 and the vals I want to 0
@@ -284,8 +289,8 @@ for(gs_value in gs_values){
 	# turn all of the out-of-bounds areas to value=255
 	values(lc05.mod)[which(mask.v == 1)] <- 255
 	
-	# now lets mask it to the final mask removing the saskatoon area (agriculture)
-	ind <- which(mask.v == 3); values(lc05.mod)[ind] <- 0 # && v.lc05.mod != 255
+	# now lets mask it to the final mask removing the Saskatoon, Canada area (agriculture)
+	ind <- which(mask.v == 3); values(lc05.mod)[ind] <- 0 
 	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_FINALOUT3.tif", sep=""), overwrite=T, options="COMPRESS=LZW")
 }
 
