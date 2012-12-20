@@ -165,7 +165,7 @@ for(gs_value in gs_values){
 	print("    STEP 5...")
 
 	# # Reclass Sub-polar or polar grassland-lichen-moss as GRAMMINOID TUNDRA
-	ind <- which(v.lc05.mod == 12 & v.lc05.mod == 10); values(lc05.mod)[ind] <- 5 # GRAMMINOID TUNDRA
+	ind <- which(v.lc05.mod == 12 | v.lc05.mod == 10); values(lc05.mod)[ind] <- 5 # GRAMMINOID TUNDRA
 	writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step4.tif", sep=""), overwrite=TRUE)
 
 	# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -260,7 +260,6 @@ for(gs_value in gs_values){
 		
 		# which values north of treeline are spruce?
 		ind <- which((v.lc05.mod == 1 | v.lc05.mod == 2) & v.treeline == 1)
-		
 		print(paste("   new length of bad pixels: ", length(ind)))
 	}
 
@@ -276,7 +275,7 @@ for(gs_value in gs_values){
 	v.NoPac <- getValues(NoPac)
 	ind <- which(v.lc05.mod > 0 & v.NoPac == 1); values(lc05.mod)[ind] <- 8
 
-	# finally turn the barren lichen moss /heath class into value 10
+	# finally turn the barren lichen moss /heath class into value 7
 	v.lc05.mod <- getValues(lc05.mod)
 	ind <- which(v.lc05.mod == 13); values(lc05.mod)[ind] <- 7
 	
