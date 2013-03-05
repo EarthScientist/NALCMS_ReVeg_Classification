@@ -96,69 +96,63 @@ if(grep(".",gs_value) == TRUE){
 }
 
 
-
 # STEP 1:
-
+print("Step 1...")
 # reclass the original NALCMS 2005 Landcover Map
 # we do this via indexing the data we want using the builtin R {base} function which() and replace the values using the R {Raster}
 # package function values() and assigning those values in the [index] the new value desired.
 # begin by first collapsing down all classes from the original input that are not of interest to NOVEG
 lc05.mod <- reclass(lc05.mod, c(15:19,128), 0, complex=FALSE)
-#values(lc05.mod)[which(values(lc05.mod) == 15 | values(lc05.mod) == 16 | values(lc05.mod) == 17 | values(lc05.mod) == 18 | values(lc05.mod) == 19 | values(lc05.mod) == 128)] <- 0 # rcl 13 & 15 thru 19 as 0
 
 # Reclass the needleleaf classes to SPRUCE
 lc05.mod <- reclass(lc05.mod, c(1:2), 9, complex=FALSE)
-#values(lc05.mod)[which(values(lc05.mod) == 1 | values(lc05.mod) == 2)] <- 9 # SPRUCE PLACEHOLDER CLASS
 
 # Reclass the deciduous and mixed as DECIDUOUS
 lc05.mod <- reclass(lc05.mod, c(5:6), 3, complex=FALSE)
-# ind <- which(values(lc05.mod) == 5 | values(lc05.mod) == 6); values(lc05.mod)[ind] <- 3 # Final Class
 
 # Reclass Sub-polar or polar shrubland-lichen-moss as SHRUB TUNDRA
 lc05.mod <- reclass(lc05.mod, 11, 4, complex=FALSE)
-# ind <- which(values(lc05.mod) == 11); values(lc05.mod)[ind] <- 4 
 
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 2
-#  here we are going to take the class SPRUCE or WET TUNDRA and break it down into classes of SPRUCE BOG or WETLAND TUNDRA or WETLAND
+print(" Step 2...")
+# take the class WETLAND and break it down into classes of SPRUCE BOG (placeholder class) or WETLAND TUNDRA
 
-# this command asks which of the values of the reclassed map are wetland and also not near the coast? This will create spruce bog or SPRUCE
+# which values of wetland map are not near the coast? This will create interior spruce bog
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 14 & coast_spruce_bog == 2", 9, complex=TRUE)
-# ind <- which(v.lc05.mod == 14 & v.coast_spruce_bog == 2); values(lc05.mod)[ind] <- 9 # reclassed into SPRUCE placeholder class
 
 # coastal wetlands are now reclassed to a placeholder class
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 14 & coast_spruce_bog != 2", 20, complex=TRUE)
-# ind <- which(v.lc05.mod == 14 & v.coast_spruce_bog != 2); values(lc05.mod)[ind] <- 20 # reclassed to a PlaceHolder class of 20 (coastal wetland)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-# Step 3 here the coastal wetland class is going to be reclassified into WETLAND TUNDRA or NO VEG
+# Step 3 
 print("  STEP 3...")
+# coastal wetland class to WETLAND TUNDRA or NO VEG based on the gs_temp (Average Growing Season Temperature) values
 
-# here we are taking the placeholder class of 20 and turning it into Wetland Tundra and NoVeg
+# take the placeholder class of 20 and reclass to Wetland Tundra
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp < gs_value & treeline == 1", 6, complex=TRUE)
-# ind <- which(v.lc05.mod == 20 & v.gs_temp < gs_value & v.treeline == 1); values(lc05.mod)[ind] <- 6 # this is a FINAL CLASS WETLAND TUNDRA
 
-lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & treeline == 1", 0, complex=TRUE)
-# ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value & v.treeline == 1); values(lc05.mod)[ind] <- 0
+# turn the remainder of coastal wetland into No Veg
+lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & treeline == 1", 0, complex=TRUE) # | treeline == 0
 
-# this next line is saying that if a pixel in lc05 has gs_temp < 6.5 and is in the coastal region but not above treeline make it a black spruce
-lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & treeline == 0", 0, complex=TRUE)
+# turn the remainder of the stpru
+# lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & treeline == 0", 0, complex=TRUE)
 # ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value & v.treeline == 0); values(lc05.mod)[ind] <- 0
 
 # remove the remainder of the class 20 which were over some NA cells incorrectly during the original query
-lc05.mod <- reclass(lc05.mod, 20, 0, complex=FALSE)
+# lc05.mod <- reclass(lc05.mod, 20, 0, complex=FALSE)
 # ind <- which(v.lc05.mod == 20); values(lc05.mod)[ind] <- 0 
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 4
 # lets turn the placeholder class 8 (Temperate or sub-polar shrubland) into DECIDUOUS or SHRUB TUNDRA
 print("   STEP 4...")
+# SHRUB TUNDRA
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 8 & gs_temp < gs_value", 4, complex=TRUE)
-# ind <- which(v.lc05.mod == 8 & v.gs_temp < gs_value); values(lc05.mod)[ind] <- 4 # this is the final class of SHRUB TUNDRA
 
+# turn the remainder of the placeholder class to DECIDUOUS
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 8 & gs_temp >= gs_value", 3, complex=TRUE)
-# ind <- which(v.lc05.mod == 8 & v.gs_temp >= gs_value); values(lc05.mod)[ind] <- 3 # this is the final class of DECIDUOUS
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 5
@@ -168,43 +162,39 @@ print("    STEP 5...")
 
 # # Reclass Sub-polar or polar grassland-lichen-moss as GRAMMINOID TUNDRA
 lc05.mod <- reclass(lc05.mod, c(10,12), 5, complex=FALSE)
-# ind <- which(v.lc05.mod == 12 | v.lc05.mod == 10); values(lc05.mod)[ind] <- 5 # GRAMMINOID TUNDRA
-
-# writeRaster(lc05.mod, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_Step4.tif", sep=""), overwrite=TRUE)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 6
 print("     STEP 6...")
 # reclass the SPRUCE category to WHITE and BLACK based on <>6.5 degrees and North/South Slopes 
 
-# we need to examine the 2 placeholder classes for SPRUCE class and parse them out in to WHITE / BLACK.  
-#this line states that, where the SPRUCE class exists & is on a North Facing slope 
+# Take the SPRUCE placeholder class and parse it out in to WHITE / BLACK.
+# White Spruce = SPRUCE class & on a South-ish Facing slope
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 9 & north_south == 1", 2, complex=TRUE)
 # ind <- which(v.lc05.mod == 9 & v.north_south == 1); values(lc05.mod)[ind] <- 2
 
-# if any pixels in the 2 spruce classes are north facing and have gs_temps < gs_value then it is BLACK SPRUCE
+# Black Spruce = SPRUCE class & Very North-ish facing
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 9 & north_south == 2", 1, complex=TRUE)
-# ind <- which(v.lc05.mod == 9 & v.north_south == 2); values(lc05.mod)[ind] <- 1 # this is a culprit of the spruce issue.
 
 #------------------------------------------------------------------------------------------------------------------------
 # this little 2 liner is put in to solve the issue with leftover class 9 in the ALFRESCO Veg Map reclassification\
 # there are issues with the 999 {flat areas} with some overlap with spruce.
-lc05.mod <- reclass(lc05.mod, "lc05.mod == 9 & north_south == 999", 0, complex=TRUE)
+# lc05.mod <- reclass(lc05.mod, "lc05.mod == 9 & north_south == 999", 0, complex=TRUE)
 # ind <- which(v.lc05.mod == 9 & v.north_south == 999); values(lc05.mod)[ind] <- 0
 
 # here we turn all of the remainders into WHITE SPRUCE
-lc05.mod <- reclass(lc05.mod, 9, 2, complex=FALSE)
+# lc05.mod <- reclass(lc05.mod, 9, 2, complex=FALSE)
 # ind <- which(v.lc05.mod == 9); values(lc05.mod)[ind] <- 2
 
 #-----------------------------------------------------------
 # STEP 7
 print("      STEP 7...")
+# here we look for SPRUCE class that live on the north slope (incorrectly in original NALCMS Map) and reclassing them to the most common adjacent value
 
+# this is the number of neighbors to consider adjacent to the focal cell
 focalNeighbors <- 16
 
-# bring the data values back into a map for the adjacency call\
-# holderTMP = lc05.mod
-
+# bring the data values back into a map for the adjacency call
 values(lc05) <- lc05.mod
 
 # which values north of treeline are spruce?
@@ -219,70 +209,20 @@ while(length(ind) > 0){
 		adjCellVals <- new.mat[(rowNums[i]:(rowNums[i]+15)),3]
 		adjCellVals.count <- table(adjCellVals[which(adjCellVals > 2)], useNA='no')
 		newVal <- as.integer(names(adjCellVals.count[which(adjCellVals.count == max(adjCellVals.count))]))
-		# print(i)
 		if(length(newVal) > 1){
 			newVal <- newVal[1] # if there is a tie, gotta take one, so take the first in the list 
 		} else if(length(newVal) < 1){
 			newVal <- lc05.mod[ind[i]]
 		}
-		# add that value into the mix
+		# add that value into the map
 		lc05.mod[new.mat[i,1]] <- newVal
 	}
 	values(lc05) <- lc05.mod
 	lc05.mod <- getValues(lc05)
 	ind <- which((lc05.mod == 1 | lc05.mod == 2) & treeline == 1)
-	print(paste("   new length of bad pixels: ", length(ind)))
+	print(paste("      new length of bad pixels: ", length(ind)))
 }
 
-
-# focalNeighbors <- 16 # this is a value of 4(rook),8(queen),16,OR bishop
-
-# # which values north of treeline are spruce?
-# ind <- which((v.lc05.mod == 1 | v.lc05.mod == 2) & v.treeline == 1)
-
-# while(length(ind) > 0){
-# 	# here we create a matrix that will be used to hold focal and 16 neighbors and reclass value
-# 	new.m <- matrix(NA,nrow=length(ind),ncol=focalNeighbors+2)
-
-# 	print(paste("number of bad pixels: ", length(ind)))
-
-# 	# fill column 1 with the cell indexes grabbed above
-# 	new.m[,1] <- ind
-	
-# 	for(n in 1:nrow(new.m)){ 
-# 		# here we ask which cell numbers are adjacent to the focal cell of interest
-# 		adj <- adjacent(lc05.mod, new.m[n,1], directions=focalNeighbors, pairs=FALSE, target=NULL, sorted=FALSE, include=FALSE, id=FALSE)	
-# 		# then we add those cell vals to the matrix
-# 		new.m[n,2:as.integer(focalNeighbors+1)] <- adj
-# 		# this line grabs those values from the indexes 
-# 		adjCellVals <- v.lc05.mod[adj]
-# 		# which ones of these cells are not 0,1,2 (oob, black spruce, white spruce)
-# 		desiredInd <- which(adjCellVals > 2| adjCellVals == 0) 
-# 		# what is the most common value in the set?
-# 		adjCellVals.count <- table(adjCellVals[desiredInd])
-# 		# what do we do if there are no values that meet criteria?
-# 		if(length(adjCellVals.count) == 0){
-# 			#print("SKIP!!!")
-# 			new.m[n,focalNeighbors+2] <- NA
-# 		}else{	
-# 			maxCount <- which(as.vector(adjCellVals.count) == max(as.vector(adjCellVals.count)))
-			
-# 			# # here if there is a tie, we are going to take the first one in the list.  Gotta choose one.
-# 			if(length(maxCount)>1){ maxCount <- maxCount[1] } else{ maxCount <- maxCount }
-# 			cellVals <- as.numeric(names(adjCellVals.count))		
-# 			new.m[n,focalNeighbors+2] <- cellVals[maxCount]
-# 		}
-# 	}
-# 	# which are the non-NA's?
-# 	NA.ind <- which(is.na(new.m[,focalNeighbors+2])==FALSE)
-# 	# change those values in the raster
-# 	values(lc05.mod)[new.m[,1][NA.ind]] <- new.m[,focalNeighbors+2][NA.ind]
-# 	# get the values the reclassified map again
-# 	v.lc05.mod <- getValues(lc05.mod)
-# 	# which values north of treeline are spruce?
-# 	ind <- which((v.lc05.mod == 1 | v.lc05.mod == 2) & v.treeline == 1)
-# 	print(paste("   new length of bad pixels: ", length(ind)))
-# }
 
 # # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 8
@@ -290,25 +230,24 @@ while(length(ind) > 0){
 print("       STEP 8...")
 
 # get the values for the North Pacific Maritime region map that we will use to reclass that region in the new veg map
-lc05.mod <- reclass(lc05.mod, "lc05.mod > 0 & NoPac == 1", 2, complex=TRUE)
-# ind <- which(v.lc05.mod > 0 & v.NoPac == 1); values(lc05.mod)[ind] <- 8
+lc05.mod <- reclass(lc05.mod, "lc05.mod > 0 & NoPac == 1", 8, complex=TRUE)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 9 
+print("        STEP 9...")
 #  turn the barren lichen moss /heath class into value 7
-lc05.mod <- reclass(lc05.mod, 13, 2, complex=FALSE)
-# ind <- which(v.lc05.mod == 13); values(lc05.mod)[ind] <- 7
+lc05.mod <- reclass(lc05.mod, 13, 7, complex=FALSE)
+
 
 # # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-# STEP 9 
+# STEP 10
+print("...Writing output tiff file...") 
 # here we need to set all of the not "no_veg" values to 255 and NoVeg to 0 using the mask file above.  It is a 3 category mask
 #  with classes for Out-of-bounds, saskatoon agricultural area, all other areas
 # turn all of the out-of-bounds areas to value=255
-reclass(lc05.mod, "mask == 1", 2, complex=TRUE)
-# values(lc05.mod)[which(mask.v == 1)] <- 255
+lc05.mod <- reclass(lc05.mod, "mask == 1", 255, complex=TRUE)
 
 # now lets mask it to the final mask removing the Saskatoon, Canada area (agriculture)
-# ind <- which(mask.v == 3); values(lc05.mod)[ind] <- 0 
-values(lc05) <- lc05.mod
+values(lc05) <- lc05.mod # bring the values back into the raster
 writeRaster(lc05, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,".tif", sep=""), overwrite=T, options="COMPRESS=LZW")
 
