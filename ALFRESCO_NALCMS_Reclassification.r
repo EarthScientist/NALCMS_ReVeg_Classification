@@ -240,4 +240,8 @@ lc05.mod <- reclass(lc05.mod, "mask == 1", 255, complex=TRUE)
 
 # now lets mask it to the final mask removing the Saskatoon, Canada area (agriculture)
 values(lc05) <- lc05.mod # bring the values back into the raster
-writeRaster(lc05, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,".tif", sep=""), overwrite=T, options="COMPRESS=LZW")
+writeRaster(lc05, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,".tif", sep=""), overwrite=T, options="COMPRESS=LZW")
+
+# now we need to rewrite the file out as a byte not 32-bit float which is what ALFRESCO wants as a datatype for inputs
+system(paste("gdal_translate -of GTiff -ot Byte ",paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,".tif", sep="")," ",paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,"_byte.tif", sep=""),sep=""))
+
