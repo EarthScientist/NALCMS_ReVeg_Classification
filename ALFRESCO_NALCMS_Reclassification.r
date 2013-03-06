@@ -134,9 +134,6 @@ lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp < gs_value & treeline ==
 # turn the remainder of coastal wetland into No Veg
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & (treeline == 1 | treeline == 0)", 0, complex=TRUE) # | treeline == 0
 
-values(lc05) <- lc05.mod 
-writeRaster(lc05, filename="STEP3_test.tif")
-
 # due to deficiencies in the data there are 71 fringe points that remain class 20, this is due to a slightly different extent in the treeline layer in Manitoba
 # I am going to turn them into noVeg since we cannot have a class 20
 lc05.mod <- reclass(lc05.mod, 20, 0, complex=FALSE)
