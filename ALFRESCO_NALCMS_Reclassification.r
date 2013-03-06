@@ -113,7 +113,8 @@ lc05.mod <- reclass(lc05.mod, c(5:6), 3, complex=FALSE)
 # Reclass Sub-polar or polar shrubland-lichen-moss as SHRUB TUNDRA
 lc05.mod <- reclass(lc05.mod, 11, 4, complex=FALSE)
 
-
+values(lc05) <- lc05.mod 
+writeRaster(lc05, filename="STEP1_test.tif")
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 2
 print(" Step 2...")
@@ -125,6 +126,8 @@ lc05.mod <- reclass(lc05.mod, "lc05.mod == 14 & coast_spruce_bog == 2", 9, compl
 # coastal wetlands are now reclassed to a placeholder class
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 14 & coast_spruce_bog != 2", 20, complex=TRUE)
 
+values(lc05) <- lc05.mod 
+writeRaster(lc05, filename="STEP2_test.tif")
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # Step 3 
 print("  STEP 3...")
@@ -135,6 +138,9 @@ lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp < gs_value & treeline ==
 
 # turn the remainder of coastal wetland into No Veg
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & treeline == 1", 0, complex=TRUE) # | treeline == 0
+
+values(lc05) <- lc05.mod 
+writeRaster(lc05, filename="STEP3_test.tif")
 
 # turn the remainder of the stpru
 # lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & treeline == 0", 0, complex=TRUE)
@@ -157,6 +163,9 @@ lc05.mod <- reclass(lc05.mod, "lc05.mod == 8 & gs_temp < gs_value", 4, complex=T
 # turn the remainder of the placeholder class to DECIDUOUS
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 8 & gs_temp >= gs_value", 3, complex=TRUE)
 
+values(lc05) <- lc05.mod 
+writeRaster(lc05, filename="STEP4_test.tif")
+
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 5
 # here we are reclassing the gramminoid tundra/grassland into simply gramminoid tundra
@@ -166,6 +175,8 @@ print("    STEP 5...")
 # # Reclass Sub-polar or polar grassland-lichen-moss as GRAMMINOID TUNDRA
 lc05.mod <- reclass(lc05.mod, c(10,12), 5, complex=FALSE)
 
+values(lc05) <- lc05.mod 
+writeRaster(lc05, filename="STEP5_test.tif")
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 6
 print("     STEP 6...")
@@ -178,6 +189,10 @@ lc05.mod <- reclass(lc05.mod, "lc05.mod == 9 & north_south == 1", 2, complex=TRU
 
 # Black Spruce = SPRUCE class & Very North-ish facing
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 9 & north_south == 2", 1, complex=TRUE)
+
+values(lc05) <- lc05.mod 
+writeRaster(lc05, filename="STEP6_test.tif")
+
 
 #------------------------------------------------------------------------------------------------------------------------
 # this little 2 liner is put in to solve the issue with leftover class 9 in the ALFRESCO Veg Map reclassification\
@@ -226,6 +241,9 @@ while(length(ind) > 0){
 	print(paste("      new length of bad pixels: ", length(ind)))
 }
 
+values(lc05) <- lc05.mod 
+writeRaster(lc05, filename="STEP7_test.tif")
+
 
 # # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 8
@@ -235,13 +253,17 @@ print("       STEP 8...")
 # get the values for the North Pacific Maritime region map that we will use to reclass that region in the new veg map
 lc05.mod <- reclass(lc05.mod, "lc05.mod > 0 & NoPac == 1", 8, complex=TRUE)
 
+values(lc05) <- lc05.mod 
+writeRaster(lc05, filename="STEP8_test.tif")
+
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 9 
 print("        STEP 9...")
 #  turn the barren lichen moss /heath class into value 7
 lc05.mod <- reclass(lc05.mod, 13, 7, complex=FALSE)
 
-
+values(lc05) <- lc05.mod 
+writeRaster(lc05, filename="STEP9_test.tif")
 # # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 10
 print("...Writing output tiff file...") 
