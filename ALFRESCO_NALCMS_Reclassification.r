@@ -26,6 +26,14 @@ NoPac <- getValues(raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/
 # this is the growing season temperature value threshold
 gs_value = 6.5
 
+# asks the gs_value if it contains a "." and changes it to a "_" for filenaming
+if(grep(".",gs_value) == TRUE){
+	gs <- sub(".", "_", gs_value, fixed=TRUE)
+}else{
+	gs <- gs_value
+}
+
+
 # And the resulting 16 AK NALCMS classes are:
 # 0 =  
 # 1 = Temperate or sub-polar needleleaf forest
@@ -70,6 +78,7 @@ gs_value = 6.5
 # 8 North Pacific Maritime Region - Temperate Rainforests
 # 255 out of bounds
 
+
 # this function will reclass the data
 # inputs: r.vec = a vector representing a RasterLayer object; rclVals = a list of values, or value to reclasify, 
 # OR a complex subset fuction using available objects (similar to that used in which()); 
@@ -83,14 +92,6 @@ reclass <- function(r.vec, rclVals, newVal, complex){
 		}
 	}
 	return(r.vec)
-}
-
-
-# asks the gs_value if it contains a "." and changes it to a "_" for filenaming
-if(grep(".",gs_value) == TRUE){
-	gs <- sub(".", "_", gs_value, fixed=TRUE)
-}else{
-	gs <- gs_value
 }
 
 
@@ -111,8 +112,6 @@ lc05.mod <- reclass(lc05.mod, c(5:6), 3, complex=FALSE)
 # Reclass Sub-polar or polar shrubland-lichen-moss as SHRUB TUNDRA
 lc05.mod <- reclass(lc05.mod, 11, 4, complex=FALSE)
 
-values(lc05) <- lc05.mod 
-writeRaster(lc05, filename="STEP1_test.tif")
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 2
 print(" Step 2...")
@@ -124,8 +123,6 @@ lc05.mod <- reclass(lc05.mod, "lc05.mod == 14 & coast_spruce_bog == 2", 9, compl
 # coastal wetlands are now reclassed to a placeholder class
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 14 & coast_spruce_bog != 2", 20, complex=TRUE)
 
-values(lc05) <- lc05.mod 
-writeRaster(lc05, filename="STEP2_test.tif")
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # Step 3 
 print("  STEP 3...")
@@ -154,9 +151,6 @@ lc05.mod <- reclass(lc05.mod, "lc05.mod == 8 & gs_temp < gs_value", 4, complex=T
 # turn the remainder of the placeholder class to DECIDUOUS
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 8 & gs_temp >= gs_value", 3, complex=TRUE)
 
-values(lc05) <- lc05.mod 
-writeRaster(lc05, filename="STEP4_test.tif")
-
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 5
 # here we are reclassing the gramminoid tundra/grassland into simply gramminoid tundra
@@ -166,8 +160,6 @@ print("    STEP 5...")
 # # Reclass Sub-polar or polar grassland-lichen-moss as GRAMMINOID TUNDRA
 lc05.mod <- reclass(lc05.mod, c(10,12), 5, complex=FALSE)
 
-values(lc05) <- lc05.mod 
-writeRaster(lc05, filename="STEP5_test.tif")
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 6
 print("     STEP 6...")
@@ -185,9 +177,7 @@ lc05.mod <- reclass(lc05.mod, "lc05.mod == 9 & north_south == 2", 1, complex=TRU
 # I am reclassing them here as BLACK SPRUCE since they are on low lying areas
 lc05.mod <- reclass(lc05.mod, 9, 1, complex=FALSE)
 
-values(lc05) <- lc05.mod 
-writeRaster(lc05, filename="STEP6_test.tif")
-
+# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 7
 print("      STEP 7...")
 # here we look for SPRUCE class that live on the north slope (incorrectly in original NALCMS Map) and reclassing them to the most common adjacent value
@@ -224,9 +214,6 @@ while(length(ind) > 0){
 	print(paste("      new length of bad pixels: ", length(ind)))
 }
 
-values(lc05) <- lc05.mod 
-writeRaster(lc05, filename="STEP7_test.tif")
-
 # # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 8
 #  this is where we define the North Pacific Maritime Region as its own map region that is independent of the others
@@ -235,21 +222,17 @@ print("       STEP 8...")
 # get the values for the North Pacific Maritime region map that we will use to reclass that region in the new veg map
 lc05.mod <- reclass(lc05.mod, "lc05.mod > 0 & NoPac == 1", 8, complex=TRUE)
 
-values(lc05) <- lc05.mod 
-writeRaster(lc05, filename="STEP8_test.tif")
-
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 9 
 print("        STEP 9...")
+
 #  turn the barren lichen moss /heath class into value 7
 lc05.mod <- reclass(lc05.mod, 13, 7, complex=FALSE)
-
-values(lc05) <- lc05.mod 
-writeRaster(lc05, filename="STEP9_test.tif")
 
 # # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 10
 print("...Writing output tiff file...") 
+
 # here we need to set all of the not "no_veg" values to 255 and NoVeg to 0 using the mask file above.  It is a 3 category mask
 #  with classes for Out-of-bounds, saskatoon agricultural area, all other areas
 # turn all of the out-of-bounds areas to value=255
@@ -257,4 +240,4 @@ lc05.mod <- reclass(lc05.mod, "mask == 1", 255, complex=TRUE)
 
 # now lets mask it to the final mask removing the Saskatoon, Canada area (agriculture)
 values(lc05) <- lc05.mod # bring the values back into the raster
-writeRaster(lc05, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,".tif", sep=""), overwrite=T, options="COMPRESS=LZW")
+writeRaster(lc05, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs_value,".tif", sep=""), overwrite=T, options="COMPRESS=LZW")
