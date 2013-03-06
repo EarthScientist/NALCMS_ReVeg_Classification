@@ -78,7 +78,7 @@ NoPac <- getValues(raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/
 # newVal = the new set value; complex = TRUE/FALSE to determine how to parse rclVals
 reclass <- function(r.vec, rclVals, newVal, complex){
 	if(complex == TRUE){
-		r.vec[which(eval(parse(text=complex)))] <- newVal
+		r.vec[which(eval(parse(text=rclVals)))] <- newVal
 	}else{
 		for(i in rclVals){
 			r.vec[which(r.vec == i)] <- newVal
@@ -139,6 +139,9 @@ lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & treeline =
 # turn the remainder of the stpru
 # lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & treeline == 0", 0, complex=TRUE)
 # ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value & v.treeline == 0); values(lc05.mod)[ind] <- 0
+
+#### PROBLEM HERE!
+
 
 # remove the remainder of the class 20 which were over some NA cells incorrectly during the original query
 # lc05.mod <- reclass(lc05.mod, 20, 0, complex=FALSE)
