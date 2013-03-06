@@ -1,20 +1,20 @@
-# this is a testing branch to come up with some new ways of classifying the NALCMS data
+# This script will take as input the NALCMS 2005 Landcover map and 
 # lets bring in the library used to perform this task
 require(raster)
 require(rgeos)
 require(sp)
 require(maptools)
 
-# set the working dir
-setwd("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/Outputs/")
-
 # set an output directory
 output.dir <- "/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/Outputs/"
 
-gs_value = 6.5
+# set the working dir
+setwd(output.dir)
 
-# the input NALCMS 2005 Land cover raster
+# these are the input layers that will be used to guide reclassification.  See metadata for descriptions
+#    this is the NALCMS input map resampled to 1km resolution for ALFRESCO
 lc05 <- raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/na_landcover_2005_1km_MASTER.tif")
+
 lc05.mod <- getValues(lc05)
 north_south <- getValues(raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/AKCanada_1km_NorthSouth_FlatWater_999_MASTER.tif"))
 mask <- getValues(raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/mask_for_finalization_alfresco_VegMap.tif"))
@@ -23,11 +23,8 @@ coast_spruce_bog <- getValues(raster("/workspace/UA/malindgren/projects/NALCMS_V
 treeline <- getValues(raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/CAVM_treeline_AKCanada_1km_commonExtent_MASTER.tif"))
 NoPac <- getValues(raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/August2012_FINALversion/ALFRESCO_VegMap_Ancillary/ALFRESCO_NorthPacMaritime_forVegMap.tif"))
 
-# here we turn the input rasters into a stack that is then converted into a matrix of values
-# inputs <- stack(lc05,gs_temp, coast_spruce_bog, north_south, treeline, NoPac, mask)
-# inputs.vals <- getValues(inputs)
-
-
+# this is the growing season temperature value threshold
+gs_value = 6.5
 
 # And the resulting 16 AK NALCMS classes are:
 # 0 =  
@@ -53,7 +50,7 @@ NoPac <- getValues(raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/
 # 5 6 : 4
 # 8 8 : 5
 # 10 12 : 1
-# 13 : 13 ** temp class that will be reclassed at the end
+# 13 13 : 13
 # 14 14 : 6 
 # 15 19 : 0
 
@@ -74,7 +71,8 @@ NoPac <- getValues(raster("/workspace/UA/malindgren/projects/NALCMS_Veg_reClass/
 # 255 out of bounds
 
 # this function will reclass the data
-# inputs: r.vec = a vector representing a RasterLayer object; rclVals = a list of values to reclasify or a complex subset fuction using available objects; 
+# inputs: r.vec = a vector representing a RasterLayer object; rclVals = a list of values, or value to reclasify, 
+# OR a complex subset fuction using available objects (similar to that used in which()); 
 # newVal = the new set value; complex = TRUE/FALSE to determine how to parse rclVals
 reclass <- function(r.vec, rclVals, newVal, complex){
 	if(complex == TRUE){
@@ -88,7 +86,7 @@ reclass <- function(r.vec, rclVals, newVal, complex){
 }
 
 
-# this little loop simply changes the "." to a "_"
+# asks the gs_value if it contains a "." and changes it to a "_" for filenaming
 if(grep(".",gs_value) == TRUE){
 	gs <- sub(".", "_", gs_value, fixed=TRUE)
 }else{
@@ -137,21 +135,14 @@ print("  STEP 3...")
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp < gs_value & treeline == 1", 6, complex=TRUE)
 
 # turn the remainder of coastal wetland into No Veg
-lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & treeline == 1", 0, complex=TRUE) # | treeline == 0
+lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & (treeline == 1 | treeline == 0)", 0, complex=TRUE) # | treeline == 0
 
 values(lc05) <- lc05.mod 
 writeRaster(lc05, filename="STEP3_test.tif")
 
-# turn the remainder of the stpru
-# lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & treeline == 0", 0, complex=TRUE)
-# ind <- which(v.lc05.mod == 20 & v.gs_temp >= gs_value & v.treeline == 0); values(lc05.mod)[ind] <- 0
-
-#### PROBLEM HERE!
-
-
-# remove the remainder of the class 20 which were over some NA cells incorrectly during the original query
-# lc05.mod <- reclass(lc05.mod, 20, 0, complex=FALSE)
-# ind <- which(v.lc05.mod == 20); values(lc05.mod)[ind] <- 0 
+# due to deficiencies in the data there are 71 fringe points that remain class 20, this is due to a slightly different extent in the treeline layer in Manitoba
+# I am going to turn them into noVeg since we cannot have a class 20
+lc05.mod <- reclass(lc05.mod, 20, 0, complex=FALSE)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 4
@@ -190,21 +181,13 @@ lc05.mod <- reclass(lc05.mod, "lc05.mod == 9 & north_south == 1", 2, complex=TRU
 # Black Spruce = SPRUCE class & Very North-ish facing
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 9 & north_south == 2", 1, complex=TRUE)
 
+# due to there being a couple hundred pixels living on flat areas (mainly along the Yukon River) 
+# I am reclassing them here as BLACK SPRUCE since they are on low lying areas
+lc05.mod <- reclass(lc05.mod, 9, 1, complex=FALSE)
+
 values(lc05) <- lc05.mod 
 writeRaster(lc05, filename="STEP6_test.tif")
 
-
-#------------------------------------------------------------------------------------------------------------------------
-# this little 2 liner is put in to solve the issue with leftover class 9 in the ALFRESCO Veg Map reclassification\
-# there are issues with the 999 {flat areas} with some overlap with spruce.
-# lc05.mod <- reclass(lc05.mod, "lc05.mod == 9 & north_south == 999", 0, complex=TRUE)
-# ind <- which(v.lc05.mod == 9 & v.north_south == 999); values(lc05.mod)[ind] <- 0
-
-# here we turn all of the remainders into WHITE SPRUCE
-# lc05.mod <- reclass(lc05.mod, 9, 2, complex=FALSE)
-# ind <- which(v.lc05.mod == 9); values(lc05.mod)[ind] <- 2
-
-#-----------------------------------------------------------
 # STEP 7
 print("      STEP 7...")
 # here we look for SPRUCE class that live on the north slope (incorrectly in original NALCMS Map) and reclassing them to the most common adjacent value
@@ -244,7 +227,6 @@ while(length(ind) > 0){
 values(lc05) <- lc05.mod 
 writeRaster(lc05, filename="STEP7_test.tif")
 
-
 # # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 8
 #  this is where we define the North Pacific Maritime Region as its own map region that is independent of the others
@@ -264,6 +246,7 @@ lc05.mod <- reclass(lc05.mod, 13, 7, complex=FALSE)
 
 values(lc05) <- lc05.mod 
 writeRaster(lc05, filename="STEP9_test.tif")
+
 # # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 10
 print("...Writing output tiff file...") 
@@ -275,4 +258,3 @@ lc05.mod <- reclass(lc05.mod, "mask == 1", 255, complex=TRUE)
 # now lets mask it to the final mask removing the Saskatoon, Canada area (agriculture)
 values(lc05) <- lc05.mod # bring the values back into the raster
 writeRaster(lc05, filename=paste(output.dir, "ALFRESCO_LandCover_2005_1km_gs",gs,".tif", sep=""), overwrite=T, options="COMPRESS=LZW")
-
