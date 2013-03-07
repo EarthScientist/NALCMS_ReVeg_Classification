@@ -132,7 +132,7 @@ print("  STEP 3...")
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp < gs_value & treeline == 1", 6, complex=TRUE)
 
 # turn the remainder of wetland becomes No Veg
-lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value", 0, complex=TRUE) # (treeline == 1| treeline == 0)
+lc05.mod <- reclass(lc05.mod, 20, 0, complex=FALSE) # (treeline == 1| treeline == 0)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 4
