@@ -33,7 +33,6 @@ if(grep(".",gs_value) == TRUE){
 	gs <- gs_value
 }
 
-# INPUT CLASSES IN THE AREA OF INTEREST at 1km Spatial Scale:
 
 # And the resulting 16 AK NALCMS classes are:
 # 0 =  
@@ -52,6 +51,16 @@ if(grep(".",gs_value) == TRUE){
 # 17 = Urban and Built-up
 # 18 = Water
 # 19 = Snow and Ice
+
+# COLLAPSES TO:
+# 0 0 : 0
+# 1 2 : 2
+# 5 6 : 4
+# 8 8 : 5
+# 10 12 : 1
+# 13 13 : 13
+# 14 14 : 6 
+# 15 19 : 0
 
 
 # FINAL OUTPUT CLASSIFICATION AFTER THIS RECLASSIFICATION IS AS FOLLOWS:
@@ -135,12 +144,6 @@ lc05.mod <- reclass(lc05.mod, "lc05.mod == 8 & gs_temp < gs_value", 4, complex=T
 # turn the remainder of the placeholder class to DECIDUOUS
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 8 & gs_temp >= gs_value", 3, complex=TRUE)
 
-# which values in Deciduous are above treeline and less than gs_value --> reclass to shrub tundra
-# lc05.mod <- reclass(lc05.mod, "lc05.mod == 3 & gs_temp < gs_value & treeline == 1", 4, complex=TRUE)
-
-# # convert the rest of the Deciduous above the treeline and greater than gs_value into NoVeg
-# lc05.mod <- reclass(lc05.mod, "lc05.mod == 3 & gs_temp >= gs_value & treeline == 1", 0, complex=TRUE)
-
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 5
 # here we are reclassing the gramminoid tundra/grassland into simply gramminoid tundra
@@ -173,7 +176,7 @@ print("      STEP 7...")
 # here we look for SPRUCE class that live on the north slope (incorrectly in original NALCMS Map) and reclassing them to the most common adjacent value
 
 # this is the number of neighbors to consider adjacent to the focal cell
-focalNeighbors <- 'bishop'
+focalNeighbors <- 16
 
 # bring the data values back into a map for the adjacency call
 values(lc05) <- lc05.mod
