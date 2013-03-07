@@ -131,12 +131,8 @@ print("  STEP 3...")
 # take the placeholder class of 20 and reclass to Wetland Tundra
 lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp < gs_value & treeline == 1", 6, complex=TRUE)
 
-# turn the remainder of coastal wetland into No Veg
-lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value & (treeline == 1 | treeline == 0)", 0, complex=TRUE) # | treeline == 0
-
-# due to deficiencies in the data there are 71 fringe points that remain class 20, this is due to a slightly different extent in the treeline layer in Manitoba
-# I am going to turn them into noVeg since we cannot have a class 20
-lc05.mod <- reclass(lc05.mod, 20, 0, complex=FALSE)
+# turn the remainder of wetland becomes No Veg
+lc05.mod <- reclass(lc05.mod, "lc05.mod == 20 & gs_temp >= gs_value", 0, complex=TRUE) # (treeline == 1| treeline == 0)
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 4
