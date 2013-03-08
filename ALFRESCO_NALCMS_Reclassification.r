@@ -94,7 +94,6 @@ reclass <- function(r.vec, rclVals, newVal, complex){
 	return(r.vec)
 }
 
-
 # STEP 1:
 print("Step 1...")
 # reclass the original NALCMS 2005 Landcover Map
@@ -138,11 +137,15 @@ lc05.mod <- reclass(lc05.mod, 20, 0, complex=FALSE) # (treeline == 1| treeline =
 # STEP 4
 # lets turn the placeholder class 8 (Temperate or sub-polar shrubland) into DECIDUOUS or SHRUB TUNDRA
 print("   STEP 4...")
-# SHRUB TUNDRA
-lc05.mod <- reclass(lc05.mod, "lc05.mod == 8 & gs_temp < gs_value", 4, complex=TRUE)
 
-# turn the remainder of the placeholder class to DECIDUOUS
-lc05.mod <- reclass(lc05.mod, "lc05.mod == 8 & gs_temp >= gs_value", 3, complex=TRUE)
+# SHRUB TUNDRA = all shrub pixels with gs_temp values less than 6.5 C
+lc05.mod <- reclass(lc05.mod, "lc05.mod == 8 & gs_temp < gs_value ", 4, complex=TRUE) # & treeline != 1
+
+# DECIDUOUS = all shrub pixels with gs_temp values greater than 6.5 C
+lc05.mod <- reclass(lc05.mod, "lc05.mod == 8 & gs_temp >= gs_value", 3, complex=TRUE) # & treeline != 1
+
+# if any DECIDUOUS pixel are still located above treeline make it SHRUB TUNDRA
+# lc05.mod <- reclass(lc05.mod, "lc05.mod == 3 & treeline == 1", 4, complex=TRUE) # & treeline != 1
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 5
@@ -170,41 +173,65 @@ lc05.mod <- reclass(lc05.mod, "lc05.mod == 9 & north_south == 2", 1, complex=TRU
 # I am reclassing them here as BLACK SPRUCE since they are on low lying areas
 lc05.mod <- reclass(lc05.mod, 9, 1, complex=FALSE)
 
+values(lc05) <- lc05.mod
+writeRaster(lc05, filename="STEP6.tif", overwrite=T)
+
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # STEP 7
 print("      STEP 7...")
-# here we look for SPRUCE class that live on the north slope (incorrectly in original NALCMS Map) and reclassing them to the most common adjacent value
 
-# this is the number of neighbors to consider adjacent to the focal cell
-focalNeighbors <- 16
+# THIS STEP FINDS AND REPLACES sPRUCE PIXELS THAT ARE ERRONEOUSLY CLASSIFIED IN THE ORIGINAL NALCMS 05 MAP
+#  WITH THE MOST COMMON VALUES OF THE ADJACENT CELLS THAT ARE NOT SPRUCE OR NOVEG 
 
 # bring the data values back into a map for the adjacency call
 values(lc05) <- lc05.mod
 
-# which values north of treeline are spruce?
-ind <- which((lc05.mod == 1 | lc05.mod == 2) & treeline == 1)
-while(length(ind) > 0){
-	adj <- adjacent(lc05, ind, directions=focalNeighbors, pairs=TRUE, target=NULL, sorted=TRUE, include=FALSE, id=FALSE)
-	new.mat <- cbind(adj,values(lc05)[adj[,2]])
-	# create a sequence to grab rows
+focalNeighbors = 8
+
+# which cells are suspect?
+focal <- which((lc05.mod == 1 | lc05.mod == 2) & treeline == 1)
+
+while(length(focal) > 0){
+	focalLen.in <- length(focal)
+	# Which are adjacent to these suspect cells?
+	adj <- adjacent(lc05, focal, directions=focalNeighbors, pairs=TRUE, target=NULL, sorted=TRUE, include=FALSE, id=FALSE)
+
+	adjVals <- cbind(adj,values(lc05)[adj[,2]])
+	colnames(adjVals) <- c("focal", "adjacent", "in.value")
+
+	# lets remove the values that we are not interested in changing the vals to
+	adjVals[,3][which(adjVals[,3] == 0 | adjVals[,3] == 1 | adjVals[,3] == 2)] <- NA
+
 	rowNums <- seq(1,length(adj[,2]),focalNeighbors)
 
-	for(i in 1:length(ind)){
-		adjCellVals <- new.mat[(rowNums[i]:(rowNums[i]+15)),3]
-		adjCellVals.count <- table(adjCellVals[which(adjCellVals > 2)], useNA='no')
-		newVal <- as.integer(names(adjCellVals.count[which(adjCellVals.count == max(adjCellVals.count))]))
-		if(length(newVal) > 1){
-			newVal <- newVal[1] # if there is a tie, gotta take one, so take the first in the list 
-		} else if(length(newVal) < 1){
-			newVal <- lc05.mod[ind[i]]
-		}
-		# add that value into the map
-		lc05.mod[new.mat[i,1]] <- newVal
-	}
-	values(lc05) <- lc05.mod
+	# get the values from the raster
 	lc05.mod <- getValues(lc05)
-	ind <- which((lc05.mod == 1 | lc05.mod == 2) & treeline == 1)
-	print(paste("      new length of bad pixels: ", length(ind)))
+
+	# which of the adjacent cells values are most common?
+	for(i in 1:length(rowNums)){
+		cur <- adjVals[(rowNums[i]:(rowNums[i]+(focalNeighbors-1))),]
+		cur.freq <- table(cur[,3], useNA='no')
+		if(length(cur.freq) > 0){ 
+			newVal <- as.integer(names(cur.freq[which(cur.freq == max(cur.freq))]))
+			if(length(newVal) > 1){	newVal <- newVal[1]}
+			lc05.mod[focal[i]] <- newVal
+		}
+	}
+
+	# ask which cell values are still incorrectly classified and do it again
+	focal <- which((lc05.mod == 1 | lc05.mod == 2) & treeline == 1)
+	focalLen.out <- length(focal)
+
+	# if there are pixels that just cant be solved with the algorithm make them noVeg and print the count
+	if(focalLen.in == focalLen.out){ 
+		lc05.mod[focal] <- 0
+		print(paste("Number of unsolvable pixels: ", length(focal), sep="")) 
+		print(focal)
+	}
+
+	print(paste("suspect cell count: ", length(focal), sep=""))
+	# prep the lc05 for the next round
+	values(lc05) <- lc05.mod
 }
 
 # # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
